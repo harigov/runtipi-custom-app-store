@@ -8,7 +8,7 @@
       "internalPort": 18789,
       "restart": "unless-stopped",
       "extraHosts": ["host.docker.internal:host-gateway"],
-      "command": ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"],
+      "command": ["node", "openclaw.mjs", "gateway", "--allow-unconfigured", "--bind", "lan", "--port", "18789"],
       "environment": [
         {"key": "HOME", "value": "/home/node"},
         {"key": "TERM", "value": "xterm-256color"},
