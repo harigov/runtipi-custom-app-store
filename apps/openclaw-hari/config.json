@@ -1,0 +1,82 @@
+{
+  "name": "OpenClaw (Hari)",
+  "id": "openclaw-hari",
+  "available": true,
+  "port": 18789,
+  "exposable": true,
+  "dynamic_config": true,
+  "no_gui": false,
+  "description": "Personal OpenClaw instance for Hari. OpenClaw is an open-source AI assistant that can be controlled from messaging platforms like Matrix. This instance is fully isolated from any other OpenClaw deployment in this app store.",
+  "short_desc": "Personal AI assistant (Hari's instance)",
+  "author": "openclaw",
+  "source": "https://github.com/openclaw/openclaw",
+  "website": "https://docs.openclaw.ai",
+  "version": "v2026.5.2",
+  "tipi_version": 4,
+  "categories": ["ai", "automation"],
+  "min_tipi_version": "4.0.0",
+  "force_pull": false,
+  "supported_architectures": ["amd64", "arm64"],
+  "form_fields": [
+    {
+      "type": "random",
+      "label": "Gateway auth token",
+      "env_variable": "OPENCLAW_GATEWAY_TOKEN",
+      "encoding": "hex",
+      "min": 32,
+      "max": 32,
+      "required": true,
+      "hint": "Auto-generated. Required for non-loopback access. Use this token to authenticate API/WebSocket clients."
+    },
+    {
+      "type": "password",
+      "label": "OpenAI API Key",
+      "env_variable": "OPENAI_API_KEY",
+      "required": false,
+      "hint": "Required if using OpenAI-compatible providers via OPENAI_BASE_URL. For OpenRouter, you can use this field with the OpenRouter base URL below, or use the dedicated OpenRouter key field instead."
+    },
+    {
+      "type": "text",
+      "label": "OpenAI Base URL",
+      "env_variable": "OPENAI_BASE_URL",
+      "required": false,
+      "hint": "Custom OpenAI-compatible endpoint. Leave blank for OpenAI direct. For OpenRouter via the OpenAI-compat shim, set to https://openrouter.ai/api/v1 (but prefer the dedicated OpenRouter API Key field below — it uses Hermes/OpenClaw's native OpenRouter provider)."
+    },
+    {
+      "type": "password",
+      "label": "OpenRouter API Key",
+      "env_variable": "OPENROUTER_API_KEY",
+      "required": false,
+      "hint": "Native OpenRouter provider key. Use this OR OPENAI_API_KEY+BASE_URL — not both."
+    },
+    {
+      "type": "password",
+      "label": "Anthropic API Key",
+      "env_variable": "ANTHROPIC_API_KEY",
+      "required": false,
+      "hint": "Optional. For direct Anthropic Claude access (not via OpenRouter)."
+    },
+    {
+      "type": "password",
+      "label": "Slack bot token",
+      "env_variable": "SLACK_BOT_TOKEN",
+      "required": false,
+      "hint": "Slack bot OAuth token (xoxb-...). Optional. Slack is a bundled channel in OpenClaw — setting this enables it."
+    },
+    {
+      "type": "password",
+      "label": "Slack app token",
+      "env_variable": "SLACK_APP_TOKEN",
+      "required": false,
+      "hint": "Slack app-level token (xapp-...) for socket mode. Required alongside the bot token if the Slack app uses socket-mode events instead of HTTP webhooks."
+    },
+    {
+      "type": "text",
+      "label": "Timezone",
+      "env_variable": "OPENCLAW_TZ",
+      "required": false,
+      "default": "America/New_York",
+      "hint": "IANA timezone name (e.g. America/New_York, Europe/London)."
+    }
+  ]
+}

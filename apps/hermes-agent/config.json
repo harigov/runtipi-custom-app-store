@@ -1,0 +1,117 @@
+{
+  "name": "Hermes Agent",
+  "id": "hermes-agent",
+  "available": true,
+  "port": 9119,
+  "exposable": true,
+  "dynamic_config": true,
+  "no_gui": false,
+  "description": "Self-hosted Hermes Agent by Nous Research — a self-improving AI agent with persistent memory, autonomous skills, and multi-platform messaging support (Matrix, Telegram, Discord, Slack, and more). Runs the gateway and dashboard as separate services.",
+  "short_desc": "Self-improving AI agent (gateway + web dashboard)",
+  "author": "Nous Research",
+  "source": "https://github.com/NousResearch/hermes-agent",
+  "website": "https://hermes-agent.nousresearch.com",
+  "version": "v2026.4.30",
+  "tipi_version": 3,
+  "categories": ["ai", "automation"],
+  "min_tipi_version": "4.0.0",
+  "force_pull": false,
+  "supported_architectures": ["amd64", "arm64"],
+  "form_fields": [
+    {
+      "type": "random",
+      "label": "API server auth key",
+      "env_variable": "API_SERVER_KEY",
+      "encoding": "hex",
+      "min": 32,
+      "max": 32,
+      "required": true,
+      "hint": "Auto-generated bearer token for the gateway's OpenAI-compatible API. Other apps on this Runtipi server can use this to call Hermes as an LLM provider."
+    },
+    {
+      "type": "password",
+      "label": "OpenAI API Key",
+      "env_variable": "OPENAI_API_KEY",
+      "required": false,
+      "hint": "For OpenAI direct, or for an OpenAI-compatible endpoint set together with OPENAI_BASE_URL."
+    },
+    {
+      "type": "text",
+      "label": "OpenAI Base URL",
+      "env_variable": "OPENAI_BASE_URL",
+      "required": false,
+      "hint": "Custom OpenAI-compatible endpoint. Leave blank for OpenAI direct. For OpenRouter via the OpenAI-compat shim, set to https://openrouter.ai/api/v1 (but prefer the dedicated OpenRouter API Key field below — Hermes has a native OpenRouter provider)."
+    },
+    {
+      "type": "password",
+      "label": "OpenRouter API Key",
+      "env_variable": "OPENROUTER_API_KEY",
+      "required": false,
+      "hint": "Native OpenRouter provider — gives Hermes direct access to 200+ models without going through the OpenAI-compat shim."
+    },
+    {
+      "type": "password",
+      "label": "Anthropic API Key",
+      "env_variable": "ANTHROPIC_API_KEY",
+      "required": false,
+      "hint": "Optional. For direct Anthropic Claude access."
+    },
+    {
+      "type": "password",
+      "label": "Nous Portal API Key",
+      "env_variable": "NOUS_API_KEY",
+      "required": false,
+      "hint": "Optional. For Nous Research's hosted Hermes models."
+    },
+    {
+      "type": "text",
+      "label": "Matrix homeserver URL",
+      "env_variable": "MATRIX_HOMESERVER",
+      "required": false,
+      "hint": "e.g. https://matrix.yourdomain.com or http://conduit:6167 if the Conduit Runtipi app is reachable on the shared Docker network. Leave blank to skip Matrix integration."
+    },
+    {
+      "type": "password",
+      "label": "Matrix access token",
+      "env_variable": "MATRIX_ACCESS_TOKEN",
+      "required": false,
+      "hint": "Access token for the Matrix bot account. Get one by logging in to Element with the bot account and copying the token from Settings → Help & About → Advanced → Access Token."
+    },
+    {
+      "type": "text",
+      "label": "Matrix bot user ID",
+      "env_variable": "MATRIX_USER_ID",
+      "required": false,
+      "hint": "Full Matrix ID of the bot account, e.g. @hermes:matrix.yourdomain.com."
+    },
+    {
+      "type": "text",
+      "label": "Matrix allowed users",
+      "env_variable": "MATRIX_ALLOWED_USERS",
+      "required": false,
+      "hint": "Comma-separated Matrix IDs allowed to talk to the bot, e.g. @hari:matrix.yourdomain.com,@vinuta:matrix.yourdomain.com. Leave blank to allow anyone (not recommended)."
+    },
+    {
+      "type": "boolean",
+      "label": "Matrix E2EE",
+      "env_variable": "MATRIX_ENCRYPTION",
+      "required": false,
+      "default": false,
+      "hint": "Enable end-to-end encryption. Requires the bot to verify with cross-signing on first run."
+    },
+    {
+      "type": "password",
+      "label": "Slack bot token",
+      "env_variable": "SLACK_BOT_TOKEN",
+      "required": false,
+      "hint": "Slack bot OAuth token (xoxb-...). Optional. Slack is a built-in messaging gateway in Hermes."
+    },
+    {
+      "type": "password",
+      "label": "Slack signing secret",
+      "env_variable": "SLACK_SIGNING_SECRET",
+      "required": false,
+      "hint": "Used to verify webhook signatures from Slack. Required alongside the bot token if your Slack app uses HTTP-mode events."
+    }
+  ]
+}
