@@ -4,10 +4,10 @@
 
 This deployment runs two services from the same image:
 
-- **gateway** — the agent runtime + OpenAI-compatible API server on port `8642`. Other apps on this Runtipi server can use it as a drop-in OpenAI provider via `http://hermes-gateway:8642` with the auto-generated `API_SERVER_KEY`.
+- **gateway** — the agent runtime + OpenAI-compatible API server on port `8642`. Joined to Runtipi's shared `tipi_main_network` via `addToMainNetwork: true` so other Runtipi apps can call it as an LLM provider at `http://hermes-gateway:8642`.
 - **dashboard** — the web UI on port `9119`. This is what Runtipi's "Open" button points at.
 
-Both services share the `hermes_data` volume mounted at `/opt/data` (equivalent to `~/.hermes` in the upstream docs).
+Both services share the same persistent data directory at `${APP_DATA_DIR}/data/hermes/` (mounted into the container at `/opt/data`, equivalent to `~/.hermes` in the upstream docs).
 
 ## Security warning
 
@@ -28,22 +28,20 @@ The form exposes the core Matrix env vars (`MATRIX_HOMESERVER`, `MATRIX_ACCESS_T
 
 1. In your Conduit instance, register a bot account (e.g. `@hermes:matrix.yourdomain.com`) and grab its access token.
 2. Set `MATRIX_HOMESERVER` to **either**:
-   - `http://conduit:6167` if the Conduit Runtipi app's service name is `conduit` and both apps share Runtipi's Docker network (Runtipi v4+ joins all apps to a common bridge by default — verify with `docker network inspect runtipi_runtipi_network`), **or**
+   - `http://conduit:6167` if the Conduit Runtipi app's service name is `conduit` and it's joined `tipi_main_network` (verify with `docker network inspect runtipi_tipi_main_network`), **or**
    - `https://matrix.yourdomain.com` (or whatever Conduit's exposed URL is) — works regardless of internal networking.
 3. Set `MATRIX_USER_ID` to the bot's full ID and `MATRIX_ALLOWED_USERS` to a comma-separated list of users allowed to talk to it (your own ID at minimum).
 4. Optionally enable `MATRIX_ENCRYPTION`. If you do, the agent will need to be cross-signed on first run — check the dashboard logs for the verification prompt.
 
-The internal Docker URL is faster (no TLS handshake, no public network hop) but only works if both apps actually share a Docker network — verify before assuming. The external HTTPS URL always works.
-
 ## Calling Hermes as an OpenAI provider from other Runtipi apps
 
-The gateway exposes an OpenAI-compatible API on `http://hermes-gateway:8642/v1` (inside the Runtipi Docker network). Use `API_SERVER_KEY` as the bearer token. Useful for routing Home Assistant, n8n, or any OpenAI-SDK app through Hermes (which gives them memory, skills, and provider failover for free).
+The gateway exposes an OpenAI-compatible API on `http://hermes-gateway:8642/v1` over `tipi_main_network`. Use `API_SERVER_KEY` as the bearer token. Useful for routing Home Assistant, n8n, or any OpenAI-SDK app through Hermes (which gives them memory, skills, and provider failover for free).
 
 ## MCP servers (stub)
 
-A separate Runtipi app in this store will host MCP servers (Obsidian, Google Workspace, etc.). Once that app is installed, Hermes can reach those servers via Runtipi's shared Docker network using the MCP-app's service name as hostname.
+A separate Runtipi app in this store will host MCP servers (Obsidian, Google Workspace, etc.). Once that app is installed, Hermes can reach those servers over `tipi_main_network` using the MCP-app's service name as hostname.
 
-Configure MCP servers by editing `~/.hermes/config.yaml` (the persistent `hermes_data` volume — survives restarts):
+Configure MCP servers by editing `${APP_DATA_DIR}/data/hermes/config.yaml` (the persistent config — survives restarts):
 
 ```yaml
 # Stub — fill in once the mcp-servers app exists.
@@ -60,8 +58,6 @@ mcp:
     #     Authorization: "Bearer <token>"
 ```
 
-Reach the future MCP-servers app by its Runtipi service name, e.g. `http://mcp-servers:<port>` — no extra network config is needed since Runtipi v4+ joins all apps to a common bridge.
-
 ## Updating
 
-Bump both `image:` tags in `docker-compose.yml` to a newer dated tag from <https://hub.docker.com/r/nousresearch/hermes-agent/tags> and increment `tipi_version` in `config.json`.
+Bump both `image:` tags in `docker-compose.json` to a newer dated tag from <https://hub.docker.com/r/nousresearch/hermes-agent/tags> and increment `tipi_version` in `config.json`.

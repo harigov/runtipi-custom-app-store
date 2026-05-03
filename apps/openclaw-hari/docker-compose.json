@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "services": [
+    {
+      "name": "openclaw-hari-gateway",
+      "image": "ghcr.io/openclaw/openclaw:v2026.5.2",
+      "isMain": true,
+      "internalPort": 18789,
+      "restart": "unless-stopped",
+      "extraHosts": ["host.docker.internal:host-gateway"],
+      "command": ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"],
+      "environment": [
+        {"key": "HOME", "value": "/home/node"},
+        {"key": "TERM", "value": "xterm-256color"},
+        {"key": "TZ", "value": "${OPENCLAW_TZ:-UTC}"},
+        {"key": "OPENCLAW_GATEWAY_TOKEN", "value": "${OPENCLAW_GATEWAY_TOKEN}"},
+        {"key": "OPENCLAW_DISABLE_BONJOUR", "value": "1"},
+        {"key": "OPENAI_API_KEY", "value": "${OPENAI_API_KEY:-}"},
+        {"key": "OPENAI_BASE_URL", "value": "${OPENAI_BASE_URL:-}"},
+        {"key": "OPENROUTER_API_KEY", "value": "${OPENROUTER_API_KEY:-}"},
+        {"key": "ANTHROPIC_API_KEY", "value": "${ANTHROPIC_API_KEY:-}"},
+        {"key": "SLACK_BOT_TOKEN", "value": "${SLACK_BOT_TOKEN:-}"},
+        {"key": "SLACK_APP_TOKEN", "value": "${SLACK_APP_TOKEN:-}"}
+      ],
+      "volumes": [
+        {"hostPath": "${APP_DATA_DIR}/data/config", "containerPath": "/home/node/.openclaw"},
+        {"hostPath": "${APP_DATA_DIR}/data/workspace", "containerPath": "/home/node/.openclaw/workspace"}
+      ]
+    }
+  ]
+}

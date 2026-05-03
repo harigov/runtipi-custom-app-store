@@ -12,7 +12,7 @@
   "source": "https://github.com/openclaw/openclaw",
   "website": "https://docs.openclaw.ai",
   "version": "v2026.5.2",
-  "tipi_version": 4,
+  "tipi_version": 5,
   "categories": ["ai", "automation"],
   "min_tipi_version": "4.0.0",
   "force_pull": false,

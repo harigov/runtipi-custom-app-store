@@ -12,7 +12,7 @@
   "source": "https://github.com/NousResearch/hermes-agent",
   "website": "https://hermes-agent.nousresearch.com",
   "version": "v2026.4.30",
-  "tipi_version": 3,
+  "tipi_version": 4,
   "categories": ["ai", "automation"],
   "min_tipi_version": "4.0.0",
   "force_pull": false,

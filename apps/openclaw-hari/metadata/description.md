@@ -2,7 +2,7 @@
 
 A personal instance of [OpenClaw](https://github.com/openclaw/openclaw) — an open-source, plugin-based AI assistant that runs locally and connects to LLM providers of your choice.
 
-This instance is isolated from any other OpenClaw deployment in this Runtipi store: it has its own config volume, workspace volume, and gateway token.
+This instance is isolated from any other OpenClaw deployment in this Runtipi store: it has its own config and workspace directories under `${APP_DATA_DIR}/data/`, and its own gateway token.
 
 ## First-time setup
 
@@ -14,29 +14,41 @@ This instance is isolated from any other OpenClaw deployment in this Runtipi sto
 3. Open the gateway URL from the Runtipi dashboard. Authenticate with the gateway token.
 4. From the gateway UI, choose your default model. For OpenRouter, use the form `openrouter/<provider>/<model>` (e.g. `openrouter/anthropic/claude-sonnet-4`).
 
-## Matrix integration
+## Matrix integration (one-time install)
 
-The Matrix plugin (`@openclaw/matrix`) is **pre-baked into the custom image** via the `Dockerfile` in this app directory — no manual `docker exec plugins install` needed. To configure the channel after install:
+Runtipi's dynamic compose schema does not support `build:` directives, so the Matrix plugin can't be baked into the image at build time. You install it once via `docker exec`, and it persists across restarts and container recreations because the OpenClaw config directory is a host bind mount at `${APP_DATA_DIR}/data/config/`.
 
 ```bash
+docker exec -it openclaw-hari-gateway openclaw plugins install @openclaw/matrix
 docker exec -it openclaw-hari-gateway openclaw channels add
 ```
 
-The wizard will prompt for: homeserver URL, access token (or user/password), device name, E2EE on/off, and room allowlist. If you're pointing at a Conduit instance running on this same Runtipi server, set `homeserver` to either:
-- The internal Docker URL — typically `http://conduit:6167` if the Conduit app's service name is `conduit` and you've joined the same Docker network, **or**
+The wizard prompts for: homeserver URL, access token (or user/password), device name, E2EE on/off, and room allowlist. For a Conduit instance running as a sibling Runtipi app, set `homeserver` to either:
+
+- The internal Docker URL — typically `http://conduit:6167` if the Conduit Runtipi app's service name is `conduit` and it's joined Runtipi's shared `tipi_main_network`, **or**
 - The external URL (e.g. `https://matrix.yourdomain.com`) — works regardless of network setup.
 
-The internal URL is faster and avoids the public network entirely; the external URL is simpler if your homeserver is already exposed.
+The internal URL avoids the public network entirely; the external URL is simpler if your homeserver is already exposed.
+
+**Why this is OK now (when it wasn't before):** the install writes plugin files into the bind-mounted host directory. As long as `${APP_DATA_DIR}/data/config/` exists on the host, the plugin survives container recreation, image upgrades, and host reboots.
 
 ## Adding more plugins
 
-Append `RUN openclaw plugins install @openclaw/<name>` lines to `Dockerfile`, bump the image tag in both `Dockerfile` and `docker-compose.yml`, increment `tipi_version` in `config.json`, and reinstall the app from Runtipi.
+Same pattern — `docker exec ... openclaw plugins install @openclaw/<name>`. Persists once installed. The available channel plugins are listed in <https://docs.openclaw.ai/tools/plugin>.
+
+## Updating to a newer OpenClaw version
+
+1. Pick the new version from <https://github.com/openclaw/openclaw/releases>.
+2. Update three places consistently:
+   - `docker-compose.json` — `services[0].image` tag
+   - `config.json` — `version` field, and bump `tipi_version`
+3. Commit and push to the store; Runtipi will detect the version bump.
 
 ## MCP servers (stub)
 
-A separate Runtipi app in this store will host MCP servers (Obsidian, Google Workspace, etc.). Once that app is installed, OpenClaw can reach those servers via Runtipi's shared Docker network using the MCP-app's service name as hostname.
+A separate Runtipi app in this store will host MCP servers (Obsidian, Google Workspace, etc.). Once that app is installed, OpenClaw can reach those servers over Runtipi's shared `tipi_main_network` using the MCP-app's service name as hostname.
 
-Configure MCP servers by editing `~/.openclaw/openclaw.json` (the persistent volume — survives restarts):
+Configure MCP servers by editing `${APP_DATA_DIR}/data/config/openclaw.json` (the persistent config — survives restarts):
 
 ```json5
 {
@@ -50,14 +62,3 @@ Configure MCP servers by editing `~/.openclaw/openclaw.json` (the persistent vol
   },
 }
 ```
-
-Reach the future MCP-servers app by its Runtipi service name, e.g. `http://mcp-servers:<port>` — no extra network config is needed since Runtipi v4+ joins all apps to a common bridge.
-
-## Updating to a newer OpenClaw version
-
-1. Pick the new version from <https://github.com/openclaw/openclaw/releases> (e.g. `v2026.5.20`).
-2. Update three places consistently:
-   - `Dockerfile` — `ARG OPENCLAW_VERSION=...` default
-   - `docker-compose.yml` — both the `image:` tag and `build.args.OPENCLAW_VERSION`
-   - `config.json` — `version` field, and bump `tipi_version`
-3. **Plugin upgrade caveat:** Docker pre-populates a fresh named volume from the image only on first creation. The existing config volume won't pick up new plugin versions automatically on image upgrade. To refresh plugins after a version bump, either run `docker exec -it openclaw-hari-gateway openclaw plugins update` (if available), or wipe the volume and reinstall (loses local config).
