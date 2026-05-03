@@ -34,11 +34,15 @@ Use a **separate Matrix account** from the Hari instance — both bots speaking 
 
 Same pattern — `docker exec ... openclaw plugins install @openclaw/<name>`. Persists once installed. The available channel plugins are listed in <https://docs.openclaw.ai/tools/plugin>.
 
-## Updating to a newer OpenClaw version
+## Why we're pinned to 2026.4.20 (not the latest)
+
+See `apps/openclaw-hari/metadata/description.md` for the full explanation. Short version: `@openclaw/matrix@2026.3.13` (the latest on npm) targets the pre-refactor plugin-SDK shape, which was changed in OpenClaw 2026.4.25. `2026.4.24` has its own matrix-sync regression. `2026.4.20` is the safe latest.
+
+## Updating to a newer OpenClaw version (when the plugin catches up)
 
 1. Pick the new version from <https://github.com/openclaw/openclaw/releases>.
 2. Update three places consistently in **both** `apps/openclaw-hari/` and `apps/openclaw-vinuta/`:
-   - `docker-compose.json` — `services[0].image` tag
+   - `docker-compose.json` — `services[0].image` tag (no `v` prefix)
    - `config.json` — `version` field, and bump `tipi_version`
 3. Commit and push to the store.
 

@@ -36,11 +36,21 @@ The internal URL avoids the public network entirely; the external URL is simpler
 
 Same pattern — `docker exec ... openclaw plugins install @openclaw/<name>`. Persists once installed. The available channel plugins are listed in <https://docs.openclaw.ai/tools/plugin>.
 
-## Updating to a newer OpenClaw version
+## Why we're pinned to 2026.4.20 (and not the latest)
 
-1. Pick the new version from <https://github.com/openclaw/openclaw/releases>.
+The `@openclaw/matrix` plugin on npm is at version **2026.3.13** and hasn't been republished since the OpenClaw plugin-SDK refactor that landed around **2026.4.25**. Newer image tags (2026.4.25+) refactored `dist/plugin-sdk/root-alias.cjs/` from a directory of per-channel files into a single file, which breaks the matrix plugin's `import "openclaw/plugin-sdk/matrix"`. We also can't use `2026.4.24` — issue [#72186](https://github.com/openclaw/openclaw/issues/72186) is a matrix-js-sdk regression in that build.
+
+`2026.4.20` is the most recent tag that:
+- Still has the old `root-alias.cjs/` directory layout the matrix plugin expects.
+- Is before the matrix-sync regression in `2026.4.24`.
+
+**To upgrade:** check that `@openclaw/matrix` on npm has a newer release that targets the post-refactor SDK before bumping the image tag. Until then, leave it pinned. The Docker tag scheme has no `v` prefix (e.g. `2026.4.20`, not `v2026.4.20`) — distinct from GitHub release tags.
+
+## Updating to a newer OpenClaw version (when the plugin catches up)
+
+1. Pick the new version from <https://github.com/openclaw/openclaw/releases> (or the GHCR tags list).
 2. Update three places consistently:
-   - `docker-compose.json` — `services[0].image` tag
+   - `docker-compose.json` — `services[0].image` tag (no `v` prefix)
    - `config.json` — `version` field, and bump `tipi_version`
 3. Commit and push to the store; Runtipi will detect the version bump.
 

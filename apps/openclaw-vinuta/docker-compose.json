@@ -3,7 +3,7 @@
   "services": [
     {
       "name": "openclaw-vinuta-gateway",
-      "image": "ghcr.io/openclaw/openclaw:2026.5.2",
+      "image": "ghcr.io/openclaw/openclaw:2026.4.20",
       "isMain": true,
       "internalPort": 18789,
       "restart": "unless-stopped",
