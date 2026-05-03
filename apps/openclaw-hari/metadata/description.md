@@ -19,8 +19,15 @@ This instance is isolated from any other OpenClaw deployment in this Runtipi sto
 Runtipi's dynamic compose schema does not support `build:` directives, so the Matrix plugin can't be baked into the image at build time. You install it once via `docker exec`, and it persists across restarts and container recreations because the OpenClaw config directory is a host bind mount at `${APP_DATA_DIR}/data/config/`.
 
 ```bash
-docker exec -it openclaw-hari-gateway openclaw plugins install @openclaw/matrix
-docker exec -it openclaw-hari-gateway openclaw channels add
+# Note the --dangerously-force-unsafe-install flag — required because OpenClaw's
+# static analyzer flags @openclaw/matrix's child_process use (legitimate; needed
+# to install matrix-sdk-crypto-nodejs runtime deps). Plugin is officially signed
+# (channel=official verification=source-linked), so the override is appropriate.
+docker exec -it openclaw-hari_personal-apps-openclaw-hari-gateway-1 \
+  openclaw plugins install @openclaw/matrix --dangerously-force-unsafe-install
+
+docker exec -it openclaw-hari_personal-apps-openclaw-hari-gateway-1 \
+  openclaw channels add
 ```
 
 The wizard prompts for: homeserver URL, access token (or user/password), device name, E2EE on/off, and room allowlist. For a Conduit instance running as a sibling Runtipi app, set `homeserver` to either:
