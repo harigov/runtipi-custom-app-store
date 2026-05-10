@@ -8,11 +8,12 @@ A personal **Runtipi custom app store**. Runtipi loads it as an additional app s
 
 Apps in this store, all using **official upstream Docker images**:
 
-- `openclaw-hari` — OpenClaw instance for Hari
-- `openclaw-vinuta` — separate OpenClaw instance for his wife Vinuta (independent data, URL, and volumes)
-- `hermes-agent` — Hermes Agent (gateway + dashboard)
+- `openclaw-hari` — OpenClaw instance for Hari (host port 18789)
+- `openclaw-vinuta` — OpenClaw instance for his wife Vinuta (host port 18799)
+- `hermes-hari` — Hermes Agent for Hari (gateway + dashboard, host port 9119)
+- `hermes-vinuta` — Hermes Agent for Vinuta (gateway + dashboard, host port 9219)
 
-The two OpenClaw instances must be fully isolated — distinct host ports, container names, and `${APP_DATA_DIR}` directories. They share no state.
+Each per-user instance must be **fully isolated** — distinct host ports, container/service names (`<app>-<user>-<role>`, e.g. `hermes-vinuta-gateway`), and `${APP_DATA_DIR}` directories. They share no state. The Hari/Vinuta pairs use the same upstream image and form-field set; keep them in sync when bumping versions.
 
 ## Runtipi custom app store layout
 

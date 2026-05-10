@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "services": [
+    {
+      "name": "hermes-hari-gateway",
+      "image": "nousresearch/hermes-agent:v2026.4.30",
+      "internalPort": 8642,
+      "addToMainNetwork": true,
+      "restart": "unless-stopped",
+      "command": ["gateway", "run"],
+      "environment": [
+        {"key": "HERMES_UID", "value": "10000"},
+        {"key": "HERMES_GID", "value": "10000"},
+        {"key": "API_SERVER_HOST", "value": "0.0.0.0"},
+        {"key": "API_SERVER_KEY", "value": "${API_SERVER_KEY}"},
+        {"key": "OPENAI_API_KEY", "value": "${OPENAI_API_KEY:-}"},
+        {"key": "OPENAI_BASE_URL", "value": "${OPENAI_BASE_URL:-}"},
+        {"key": "OPENROUTER_API_KEY", "value": "${OPENROUTER_API_KEY:-}"},
+        {"key": "ANTHROPIC_API_KEY", "value": "${ANTHROPIC_API_KEY:-}"},
+        {"key": "NOUS_API_KEY", "value": "${NOUS_API_KEY:-}"},
+        {"key": "MATRIX_HOMESERVER", "value": "${MATRIX_HOMESERVER:-}"},
+        {"key": "MATRIX_ACCESS_TOKEN", "value": "${MATRIX_ACCESS_TOKEN:-}"},
+        {"key": "MATRIX_USER_ID", "value": "${MATRIX_USER_ID:-}"},
+        {"key": "MATRIX_ALLOWED_USERS", "value": "${MATRIX_ALLOWED_USERS:-}"},
+        {"key": "MATRIX_ENCRYPTION", "value": "${MATRIX_ENCRYPTION:-false}"},
+        {"key": "SLACK_BOT_TOKEN", "value": "${SLACK_BOT_TOKEN:-}"},
+        {"key": "SLACK_SIGNING_SECRET", "value": "${SLACK_SIGNING_SECRET:-}"}
+      ],
+      "volumes": [
+        {"hostPath": "${APP_DATA_DIR}/data/hermes", "containerPath": "/opt/data"}
+      ]
+    },
+    {
+      "name": "hermes-hari-dashboard",
+      "image": "nousresearch/hermes-agent:v2026.4.30",
+      "isMain": true,
+      "internalPort": 9119,
+      "restart": "unless-stopped",
+      "dependsOn": ["hermes-hari-gateway"],
+      "command": ["dashboard", "--host", "0.0.0.0", "--insecure", "--no-open"],
+      "environment": [
+        {"key": "HERMES_UID", "value": "10000"},
+        {"key": "HERMES_GID", "value": "10000"},
+        {"key": "GATEWAY_HEALTH_URL", "value": "http://hermes-hari-gateway:8642"}
+      ],
+      "volumes": [
+        {"hostPath": "${APP_DATA_DIR}/data/hermes", "containerPath": "/opt/data"}
+      ]
+    }
+  ]
+}
