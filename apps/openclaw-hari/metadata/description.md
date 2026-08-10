@@ -32,10 +32,10 @@ docker exec -it openclaw-hari_personal-apps-openclaw-hari-gateway-1 \
 
 The wizard prompts for: homeserver URL, access token (or user/password), device name, E2EE on/off, and room allowlist. For a Conduit instance running as a sibling Runtipi app, set `homeserver` to either:
 
-- The internal Docker URL — typically `http://conduit:6167` if the Conduit Runtipi app's service name is `conduit` and it's joined Runtipi's shared `tipi_main_network`, **or**
+- The internal Docker URL — `http://matrix-conduit:6167` if you're using the `matrix-conduit` Runtipi app from the migrated/legacy store (verified service name; joins `tipi_main_network` automatically). For other Conduit Runtipi apps, run `docker ps | grep -i conduit` to find the service name, **or**
 - The external URL (e.g. `https://matrix.yourdomain.com`) — works regardless of network setup.
 
-The internal URL avoids the public network entirely; the external URL is simpler if your homeserver is already exposed.
+**Don't use a Tailscale `*.ts.net` URL** — Docker containers don't inherit Tailscale's MagicDNS resolver and the connection will fail with `ClientConnectorDNSError: Name or service not known`. The internal Docker URL avoids the public network entirely; the external HTTPS URL is simpler if your homeserver is already exposed.
 
 **Why this is OK now (when it wasn't before):** the install writes plugin files into the bind-mounted host directory. As long as `${APP_DATA_DIR}/data/config/` exists on the host, the plugin survives container recreation, image upgrades, and host reboots.
 

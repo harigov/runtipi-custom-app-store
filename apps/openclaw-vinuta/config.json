@@ -12,11 +12,17 @@
   "source": "https://github.com/openclaw/openclaw",
   "website": "https://docs.openclaw.ai",
   "version": "2026.4.20",
-  "tipi_version": 9,
-  "categories": ["ai", "automation"],
+  "tipi_version": 10,
+  "categories": [
+    "ai",
+    "automation"
+  ],
   "min_tipi_version": "4.0.0",
   "force_pull": false,
-  "supported_architectures": ["amd64", "arm64"],
+  "supported_architectures": [
+    "amd64",
+    "arm64"
+  ],
   "form_fields": [
     {
       "type": "random",
@@ -40,14 +46,14 @@
       "label": "OpenAI Base URL",
       "env_variable": "OPENAI_BASE_URL",
       "required": false,
-      "hint": "Custom OpenAI-compatible endpoint. Leave blank for OpenAI direct. For OpenRouter via the OpenAI-compat shim, set to https://openrouter.ai/api/v1 (but prefer the dedicated OpenRouter API Key field below — it uses Hermes/OpenClaw's native OpenRouter provider)."
+      "hint": "Custom OpenAI-compatible endpoint. Leave blank for OpenAI direct. For OpenRouter via the OpenAI-compat shim, set to https://openrouter.ai/api/v1 (but prefer the dedicated OpenRouter API Key field below \u2014 it uses Hermes/OpenClaw's native OpenRouter provider)."
     },
     {
       "type": "password",
       "label": "OpenRouter API Key",
       "env_variable": "OPENROUTER_API_KEY",
       "required": false,
-      "hint": "Native OpenRouter provider key. Use this OR OPENAI_API_KEY+BASE_URL — not both."
+      "hint": "Native OpenRouter provider key. Use this OR OPENAI_API_KEY+BASE_URL \u2014 not both."
     },
     {
       "type": "password",
@@ -61,7 +67,7 @@
       "label": "Slack bot token",
       "env_variable": "SLACK_BOT_TOKEN",
       "required": false,
-      "hint": "Slack bot OAuth token (xoxb-...). Optional. Slack is a bundled channel in OpenClaw — setting this enables it."
+      "hint": "Slack bot OAuth token (xoxb-...). Optional. Slack is a bundled channel in OpenClaw \u2014 setting this enables it."
     },
     {
       "type": "password",

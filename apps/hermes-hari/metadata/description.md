@@ -30,8 +30,10 @@ The form exposes the core Matrix env vars (`MATRIX_HOMESERVER`, `MATRIX_ACCESS_T
 
 1. In your Conduit instance, register a bot account (e.g. `@hermes-hari:matrix.yourdomain.com`) and grab its access token. **Use a different account from the Vinuta instance** — both bots speaking from the same account would be confusing.
 2. Set `MATRIX_HOMESERVER` to **either**:
-   - `http://conduit:6167` if the Conduit Runtipi app's service name is `conduit` and it's joined `tipi_main_network` (verify with `docker network inspect runtipi_tipi_main_network`), **or**
-   - `https://matrix.yourdomain.com` (or whatever Conduit's exposed URL is) — works regardless of internal networking.
+   - `http://matrix-conduit:6167` if you're using the `matrix-conduit` Runtipi app from the migrated/legacy store (the canonical service name; verified, joins `tipi_main_network` automatically). For other Conduit Runtipi apps, find the service name via `docker ps | grep -i conduit` and the internal port via `docker exec <container> ss -tlnp` — it's usually 6167 for vanilla Conduit, 8008 for conduwuit/Synapse, **or**
+   - `https://matrix.yourdomain.com` (Conduit's externally-exposed URL) — works regardless of internal networking.
+
+   **Don't use a Tailscale `*.ts.net` URL** — Docker containers don't inherit Tailscale's MagicDNS resolver, and the connection will fail with `ClientConnectorDNSError: Name or service not known`.
 3. Set `MATRIX_USER_ID` to the bot's full ID and `MATRIX_ALLOWED_USERS` to a comma-separated list of users allowed to talk to it (your own ID at minimum).
 4. Optionally enable `MATRIX_ENCRYPTION`. If you do, the agent will need to be cross-signed on first run — check the dashboard logs for the verification prompt.
 

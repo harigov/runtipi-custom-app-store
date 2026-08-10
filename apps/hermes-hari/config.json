@@ -6,17 +6,23 @@
   "exposable": true,
   "dynamic_config": true,
   "no_gui": false,
-  "description": "Personal Hermes Agent instance for Hari. Self-hosted Hermes Agent by Nous Research — a self-improving AI agent with persistent memory, autonomous skills, and multi-platform messaging support (Matrix, Telegram, Discord, Slack, and more). Runs the gateway and dashboard as separate services. Fully isolated from any other Hermes deployment in this app store.",
+  "description": "Personal Hermes Agent instance for Hari. Self-hosted Hermes Agent by Nous Research \u2014 a self-improving AI agent with persistent memory, autonomous skills, and multi-platform messaging support (Matrix, Telegram, Discord, Slack, and more). Runs the gateway and dashboard as separate services. Fully isolated from any other Hermes deployment in this app store.",
   "short_desc": "Self-improving AI agent (Hari's instance)",
   "author": "Nous Research",
   "source": "https://github.com/NousResearch/hermes-agent",
   "website": "https://hermes-agent.nousresearch.com",
   "version": "v2026.4.30",
-  "tipi_version": 5,
-  "categories": ["ai", "automation"],
+  "tipi_version": 6,
+  "categories": [
+    "ai",
+    "automation"
+  ],
   "min_tipi_version": "4.0.0",
   "force_pull": false,
-  "supported_architectures": ["amd64", "arm64"],
+  "supported_architectures": [
+    "amd64",
+    "arm64"
+  ],
   "form_fields": [
     {
       "type": "random",
@@ -40,14 +46,14 @@
       "label": "OpenAI Base URL",
       "env_variable": "OPENAI_BASE_URL",
       "required": false,
-      "hint": "Custom OpenAI-compatible endpoint. Leave blank for OpenAI direct. For OpenRouter via the OpenAI-compat shim, set to https://openrouter.ai/api/v1 (but prefer the dedicated OpenRouter API Key field below — Hermes has a native OpenRouter provider)."
+      "hint": "Custom OpenAI-compatible endpoint. Leave blank for OpenAI direct. For OpenRouter via the OpenAI-compat shim, set to https://openrouter.ai/api/v1 (but prefer the dedicated OpenRouter API Key field below \u2014 Hermes has a native OpenRouter provider)."
     },
     {
       "type": "password",
       "label": "OpenRouter API Key",
       "env_variable": "OPENROUTER_API_KEY",
       "required": false,
-      "hint": "Native OpenRouter provider — gives Hermes direct access to 200+ models without going through the OpenAI-compat shim."
+      "hint": "Native OpenRouter provider \u2014 gives Hermes direct access to 200+ models without going through the OpenAI-compat shim."
     },
     {
       "type": "password",
@@ -68,14 +74,14 @@
       "label": "Matrix homeserver URL",
       "env_variable": "MATRIX_HOMESERVER",
       "required": false,
-      "hint": "e.g. https://matrix.yourdomain.com or http://conduit:6167 if the Conduit Runtipi app is reachable on the shared Docker network. Leave blank to skip Matrix integration."
+      "hint": "For the matrix-conduit Runtipi app on the same host, use http://matrix-conduit:6167 (it joins tipi_main_network so cross-app DNS resolves). Otherwise, use the homeserver's public URL (e.g. https://matrix.yourdomain.com). Do NOT use a Tailscale *.ts.net URL \u2014 Docker containers can't resolve MagicDNS. Leave blank to skip Matrix integration."
     },
     {
       "type": "password",
       "label": "Matrix access token",
       "env_variable": "MATRIX_ACCESS_TOKEN",
       "required": false,
-      "hint": "Access token for the Matrix bot account. Get one by logging in to Element with the bot account and copying the token from Settings → Help & About → Advanced → Access Token."
+      "hint": "Access token for the Matrix bot account. Get one by logging in to Element with the bot account and copying the token from Settings \u2192 Help & About \u2192 Advanced \u2192 Access Token."
     },
     {
       "type": "text",

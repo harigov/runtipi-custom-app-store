@@ -32,10 +32,10 @@ docker exec -it openclaw-vinuta_personal-apps-openclaw-vinuta-gateway-1 \
 
 The wizard prompts for: homeserver URL, access token (or user/password), device name, E2EE on/off, and room allowlist. For a Conduit instance running as a sibling Runtipi app, set `homeserver` to either:
 
-- The internal Docker URL — typically `http://conduit:6167` if the Conduit Runtipi app's service name is `conduit` and it's joined Runtipi's shared `tipi_main_network`, **or**
+- The internal Docker URL — `http://matrix-conduit:6167` if you're using the `matrix-conduit` Runtipi app from the migrated/legacy store (verified service name; joins `tipi_main_network` automatically), **or**
 - The external URL (e.g. `https://matrix.yourdomain.com`) — works regardless of network setup.
 
-Use a **separate Matrix account** from the Hari instance — both bots speaking from the same account would be confusing.
+**Don't use a Tailscale `*.ts.net` URL** — Docker containers don't inherit Tailscale's MagicDNS resolver. Use a **separate Matrix account** from the Hari instance — both bots speaking from the same account would be confusing.
 
 ## Adding more plugins
 
