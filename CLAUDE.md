@@ -15,6 +15,18 @@ Apps in this store, all using **official upstream Docker images**:
 
 Each per-user instance must be **fully isolated** — distinct host ports, container/service names (`<app>-<user>-<role>`, e.g. `hermes-vinuta-gateway`), and `${APP_DATA_DIR}` directories. They share no state. The Hari/Vinuta pairs use the same upstream image and form-field set; keep them in sync when bumping versions.
 
+## `random` form fields must be named per-instance
+
+Runtipi derives `random` fields as `sha256(env_variable_name + machine_seed)` (`packages/backend/src/modules/env/env.utils.ts`). The value depends on the **field name only** — not the app — so two apps declaring the same `random` env var get **byte-identical secrets**.
+
+Verified on the live host: `hermes-hari` and `hermes-vinuta` share one `API_SERVER_KEY`, and `openclaw-hari`/`openclaw-vinuta` share one `OPENCLAW_GATEWAY_TOKEN`. That silently defeats the isolation this store is built around — either user's token opens the other's gateway.
+
+So **prefix every `random` field with the instance**: `HARI_DASHBOARD_PASSWORD` / `VINUTA_DASHBOARD_PASSWORD`, not a shared `DASHBOARD_PASSWORD`. This is the one place the Hari/Vinuta pairs should deliberately *not* share a field name; everything else stays in sync.
+
+`API_SERVER_KEY` and `OPENCLAW_GATEWAY_TOKEN` are still shared — renaming them rotates the credential and breaks existing API consumers, so fix those in a deliberate rotation, not as a drive-by.
+
+Also note `min` is the *output length*, not a byte count: `min: 32` with `encoding: hex` yields a 32-character value.
+
 ## Runtipi custom app store layout
 
 Each app lives at `apps/<app-id>/` with this shape:

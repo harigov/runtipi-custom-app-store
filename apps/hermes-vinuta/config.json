@@ -12,7 +12,7 @@
   "source": "https://github.com/NousResearch/hermes-agent",
   "website": "https://hermes-agent.nousresearch.com",
   "version": "v2026.8.3",
-  "tipi_version": 2,
+  "tipi_version": 3,
   "categories": [
     "ai",
     "automation"
@@ -43,21 +43,24 @@
       "hint": "Login username for the web dashboard."
     },
     {
-      "type": "password",
-      "label": "Dashboard password",
-      "env_variable": "DASHBOARD_PASSWORD",
-      "required": true,
-      "hint": "REQUIRED. Since the June 2026 hardening, Hermes refuses to serve the dashboard on a non-loopback bind unless an auth provider is configured \u2014 and Runtipi must bind 0.0.0.0 to route through Traefik. Without this the dashboard container exits on startup. Use a different password from the Hari instance."
-    },
-    {
       "type": "random",
-      "label": "Dashboard session secret",
-      "env_variable": "DASHBOARD_SESSION_SECRET",
+      "label": "Dashboard password",
+      "env_variable": "VINUTA_DASHBOARD_PASSWORD",
       "encoding": "hex",
       "min": 32,
       "max": 32,
       "required": true,
-      "hint": "Auto-generated key that signs dashboard session tokens. Having a fixed value means you stay logged in across restarts instead of being logged out every time the container recycles."
+      "hint": "Auto-generated login password for the web dashboard (username 'admin'). Read the current value from this app's app.env on the host. REQUIRED: since the June 2026 hardening Hermes refuses to serve the dashboard on a non-loopback bind without an auth provider, and Runtipi must bind 0.0.0.0 for Traefik \u2014 without it the dashboard container exits on startup."
+    },
+    {
+      "type": "random",
+      "label": "Dashboard session secret",
+      "env_variable": "VINUTA_DASHBOARD_SESSION_SECRET",
+      "encoding": "hex",
+      "min": 32,
+      "max": 32,
+      "required": true,
+      "hint": "Auto-generated key that signs dashboard session tokens, so logins survive container restarts. Deliberately named per-instance: Runtipi derives 'random' fields from the field name alone, so a shared name would hand both instances the same signing key and let a session from one authenticate against the other."
     },
     {
       "type": "text",

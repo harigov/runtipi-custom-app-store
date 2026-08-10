@@ -47,8 +47,8 @@
         {"key": "HERMES_TIMEZONE", "value": "${HERMES_TZ:-${TZ}}"},
         {"key": "GATEWAY_HEALTH_URL", "value": "http://hermes-hari-gateway:8642"},
         {"key": "HERMES_DASHBOARD_BASIC_AUTH_USERNAME", "value": "${DASHBOARD_USERNAME:-admin}"},
-        {"key": "HERMES_DASHBOARD_BASIC_AUTH_PASSWORD", "value": "${DASHBOARD_PASSWORD}"},
-        {"key": "HERMES_DASHBOARD_BASIC_AUTH_SECRET", "value": "${DASHBOARD_SESSION_SECRET}"}
+        {"key": "HERMES_DASHBOARD_BASIC_AUTH_PASSWORD", "value": "${HARI_DASHBOARD_PASSWORD}"},
+        {"key": "HERMES_DASHBOARD_BASIC_AUTH_SECRET", "value": "${HARI_DASHBOARD_SESSION_SECRET}"}
       ],
       "volumes": [
         {"hostPath": "${APP_DATA_DIR}/data/hermes", "containerPath": "/opt/data"}
