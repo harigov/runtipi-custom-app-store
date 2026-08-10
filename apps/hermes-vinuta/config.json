@@ -11,8 +11,8 @@
   "author": "Nous Research",
   "source": "https://github.com/NousResearch/hermes-agent",
   "website": "https://hermes-agent.nousresearch.com",
-  "version": "v2026.4.30",
-  "tipi_version": 1,
+  "version": "v2026.8.3",
+  "tipi_version": 2,
   "categories": ["ai", "automation"],
   "min_tipi_version": "4.0.0",
   "force_pull": false,
@@ -27,6 +27,38 @@
       "max": 32,
       "required": true,
       "hint": "Auto-generated bearer token for the gateway's OpenAI-compatible API. Other apps on this Runtipi server can use this to call Hermes as an LLM provider."
+    },
+    {
+      "type": "text",
+      "label": "Dashboard username",
+      "env_variable": "DASHBOARD_USERNAME",
+      "required": false,
+      "default": "admin",
+      "hint": "Login username for the web dashboard."
+    },
+    {
+      "type": "password",
+      "label": "Dashboard password",
+      "env_variable": "DASHBOARD_PASSWORD",
+      "required": true,
+      "hint": "REQUIRED. Since the June 2026 hardening, Hermes refuses to serve the dashboard on a non-loopback bind unless an auth provider is configured — and Runtipi must bind 0.0.0.0 to route through Traefik. Without this the dashboard container exits on startup. Use a different password from the Hari instance."
+    },
+    {
+      "type": "random",
+      "label": "Dashboard session secret",
+      "env_variable": "DASHBOARD_SESSION_SECRET",
+      "encoding": "hex",
+      "min": 32,
+      "max": 32,
+      "required": true,
+      "hint": "Auto-generated key that signs dashboard session tokens. Having a fixed value means you stay logged in across restarts instead of being logged out every time the container recycles."
+    },
+    {
+      "type": "text",
+      "label": "Timezone",
+      "env_variable": "HERMES_TZ",
+      "required": false,
+      "hint": "IANA timezone name (e.g. America/New_York, Asia/Kolkata). Leave blank to inherit the Runtipi server's timezone (Settings → General → Timezone) — that's usually what you want. This is what the agent uses for 'what time is it', scheduling, and cron; without it the agent reads the clock as UTC."
     },
     {
       "type": "password",

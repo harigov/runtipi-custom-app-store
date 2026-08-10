@@ -3,7 +3,7 @@
   "services": [
     {
       "name": "openclaw-vinuta-gateway",
-      "image": "ghcr.io/openclaw/openclaw:2026.4.20",
+      "image": "ghcr.io/openclaw/openclaw:2026.7.1",
       "isMain": true,
       "internalPort": 18789,
       "restart": "unless-stopped",
@@ -12,7 +12,7 @@
       "environment": [
         {"key": "HOME", "value": "/home/node"},
         {"key": "TERM", "value": "xterm-256color"},
-        {"key": "TZ", "value": "${OPENCLAW_TZ:-UTC}"},
+        {"key": "TZ", "value": "${OPENCLAW_TZ:-${TZ}}"},
         {"key": "OPENCLAW_GATEWAY_TOKEN", "value": "${OPENCLAW_GATEWAY_TOKEN}"},
         {"key": "OPENCLAW_DISABLE_BONJOUR", "value": "1"},
         {"key": "OPENAI_API_KEY", "value": "${OPENAI_API_KEY:-}"},

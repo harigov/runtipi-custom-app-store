@@ -94,6 +94,30 @@ Runtipi has three possible compose formats; **only one of them works reliably** 
 - `min_tipi_version: "4.5.0"` — minimum version that supports the strict ARK schema.
 - `form_fields[]` — install-time form. Values become env vars available for substitution in `docker-compose.json` `environment` blocks. **Do not set a default OpenRouter URL on `OPENAI_BASE_URL`** — a real OpenAI key with the OpenRouter URL silently 401s. Leave the default blank.
 
+## Timezone convention (every app must set this)
+
+Both upstream images ship `/etc/localtime` symlinked to `Etc/UTC`. With no `TZ` set, the agent reads the wall clock as UTC and gets dates, "what time is it", and cron scheduling wrong even though the host clock is correct. Every app in this store therefore sets:
+
+```json
+{"key": "TZ", "value": "${<APP>_TZ:-${TZ}}"}
+```
+
+- The bare `${TZ}` is **Runtipi's own** timezone setting. `packages/backend/src/common/helpers/env-helpers.ts` writes `TZ` into the system `.env` (from Settings → General → Timezone, defaulting to the host zone), and `app.helpers.ts` seeds each app's `app.env` from that file — so `${TZ}` is always populated for app compose interpolation.
+- `${<APP>_TZ}` is an optional per-app form field with **no `default`**, so leaving it blank falls through to the server zone. Docker Compose's `:-` treats empty *and* unset alike, and nested defaults (`${A:-${B}}`) work — Runtipi only interpolates `{{RUNTIPI_APP_ID}}` itself and passes `${...}` through to Compose verbatim.
+- **Hermes also needs `HERMES_TIMEZONE`**, set to the same expression. Per `hermes_time.py` the agent's clock resolves `HERMES_TIMEZONE` → `timezone` in `config.yaml` → server local time; `TZ` alone fixes Python/libc but not Hermes's agent-facing sense of "now".
+
+Do **not** try to fix this by bind-mounting `/etc/localtime` or `/etc/timezone`. Tested and rejected: Node resolves the zone from the symlink *target name*, not file contents, so OpenClaw stays on UTC regardless; the mount silently overwrites the container's `UTC`/`Etc/UTC` tzdata entries; and hosts without an `/etc/timezone` file (Fedora/Arch) make the container fail to start outright. Setting `TZ` to an IANA name is sufficient — both images bundle complete tzdata.
+
+## Hermes dashboard requires auth (v2026.6+)
+
+Since the June 2026 hardening, Hermes refuses to serve the dashboard on a non-loopback bind unless an auth provider is registered — it logs `Refusing to bind dashboard to 0.0.0.0` and exits 1. Runtipi must bind `0.0.0.0` for Traefik, so a password is mandatory. `--insecure` is now a deprecated no-op; don't rely on it.
+
+Wire it through the basic-auth plugin's env overrides (`plugins/dashboard_auth/basic`), which win over `config.yaml`:
+
+- `HERMES_DASHBOARD_BASIC_AUTH_USERNAME`
+- `HERMES_DASHBOARD_BASIC_AUTH_PASSWORD` (plaintext; `_PASSWORD_HASH` also accepted)
+- `HERMES_DASHBOARD_BASIC_AUTH_SECRET` — signs session tokens; without a fixed value every restart logs you out
+
 ## Plugin / extension persistence (OpenClaw lesson)
 
 Runtime-installed OpenClaw plugins (`docker exec ... openclaw plugins install @openclaw/<name>`) **do persist** across restarts and container recreation in this store, because OpenClaw's `~/.openclaw/` directory is bind-mounted to a host path under `${APP_DATA_DIR}/data/config/`. The "plugins disappear on restart" problem the user hit with third-party Runtipi apps was caused by anonymous/named Docker volumes that get wiped — the bind-mount approach avoids that entirely.

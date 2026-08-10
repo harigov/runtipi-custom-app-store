@@ -19,16 +19,14 @@ This instance is isolated from any other OpenClaw deployment in this Runtipi sto
 Runtipi's dynamic compose schema does not support `build:` directives, so the Matrix plugin can't be baked into the image at build time. You install it once via `docker exec`, and it persists across restarts and container recreations because the OpenClaw config directory is a host bind mount at `${APP_DATA_DIR}/data/config/`.
 
 ```bash
-# Note the --dangerously-force-unsafe-install flag — required because OpenClaw's
-# static analyzer flags @openclaw/matrix's child_process use (legitimate; needed
-# to install matrix-sdk-crypto-nodejs runtime deps). Plugin is officially signed
-# (channel=official verification=source-linked), so the override is appropriate.
 docker exec -it openclaw-vinuta_personal-apps-openclaw-vinuta-gateway-1 \
-  openclaw plugins install @openclaw/matrix --dangerously-force-unsafe-install
+  openclaw plugins install @openclaw/matrix
 
 docker exec -it openclaw-vinuta_personal-apps-openclaw-vinuta-gateway-1 \
   openclaw channels add
 ```
+
+> The `--dangerously-force-unsafe-install` flag this used to require is **no longer needed** as of 2026.7.1 — the install-time scanner was removed upstream and the flag is now a deprecated no-op.
 
 The wizard prompts for: homeserver URL, access token (or user/password), device name, E2EE on/off, and room allowlist. For a Conduit instance running as a sibling Runtipi app, set `homeserver` to either:
 
@@ -41,9 +39,13 @@ Use a **separate Matrix account** from the Hari instance — both bots speaking 
 
 Same pattern — `docker exec ... openclaw plugins install @openclaw/<name>`. Persists once installed. The available channel plugins are listed in <https://docs.openclaw.ai/tools/plugin>.
 
-## Why we're pinned to 2026.4.20 (not the latest)
+## Why 2026.7.1 (not the newest tag)
 
-See `apps/openclaw-hari/metadata/description.md` for the full explanation. Short version: `@openclaw/matrix@2026.3.13` (the latest on npm) targets the pre-refactor plugin-SDK shape, which was changed in OpenClaw 2026.4.25. `2026.4.24` has its own matrix-sync regression. `2026.4.20` is the safe latest.
+See `apps/openclaw-hari/metadata/description.md` for the full explanation. Short version: the old `2026.4.20` pin is lifted because `@openclaw/matrix` has been republished and now requires `openclaw >= 2026.7.1`. We pin `2026.7.1` rather than npm's `latest` (`2026.7.1-2`) because the `-2` suffix parses as a semver prerelease and wouldn't satisfy that peer range.
+
+## Timezone
+
+Leave the **Timezone** field blank to inherit the Runtipi server's timezone (Settings → General → Timezone). Fill it in only if this instance should run on a different clock than the server. Without it the container reads the wall clock as UTC — the image ships `/etc/localtime` pointing at `Etc/UTC` — and the agent gets dates, "what time is it", and scheduling wrong.
 
 ## Updating to a newer OpenClaw version (when the plugin catches up)
 
