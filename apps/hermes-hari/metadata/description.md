@@ -11,9 +11,26 @@ This deployment runs two services from the same image:
 
 Both services share the same persistent data directory at `${APP_DATA_DIR}/data/hermes/` (mounted into the container at `/opt/data`, equivalent to `~/.hermes` in the upstream docs).
 
-## Security warning
+## Dashboard login
 
-The dashboard stores API keys and is launched with `--insecure --host 0.0.0.0` so Traefik can route to it. **Do not enable "Expose on internet" for this app unless you've put it behind authentication** (Authelia, Cloudflare Access, basic-auth middleware, etc.). LAN-only or VPN-only access is the safe default.
+The dashboard is password-protected. Set **Dashboard password** at install time (username defaults to `admin`) and log in with those credentials at the app URL.
+
+This is **required, not optional**: as of the June 2026 hardening, Hermes refuses to serve the dashboard on a non-loopback bind unless an auth provider is registered, and Runtipi has to bind `0.0.0.0` for Traefik to route to it. The old `--insecure` flag is now a deprecated no-op — with no password configured the dashboard container logs `Refusing to bind dashboard to 0.0.0.0` and exits.
+
+Credentials are wired through `HERMES_DASHBOARD_BASIC_AUTH_USERNAME` / `_PASSWORD`, with `_SECRET` (the auto-generated **Dashboard session secret**) signing session tokens so logins survive container restarts.
+
+**Still be careful about exposure.** The dashboard holds your API keys. Password auth is a real gate, but LAN-only or VPN-only access remains the safer default; if you do expose it publicly, consider stacking Authelia or Cloudflare Access in front.
+
+## Timezone
+
+Leave the **Timezone** field blank and both services inherit the Runtipi server's timezone (Settings → General → Timezone), which Runtipi exposes to every app as `TZ`. Set it only if this instance should run on a different clock than the server.
+
+Two variables get set from it, and both matter:
+
+- `TZ` — the OS-level zone Python's `datetime.now()` and the shell read.
+- `HERMES_TIMEZONE` — Hermes's own setting. Per `hermes_time.py` the resolution order is `HERMES_TIMEZONE` → the `timezone` key in `config.yaml` → the server's local time. This is what the agent uses for "what time is it", relative dates, and cron scheduling.
+
+Without these the container falls back to UTC — the image ships `/etc/localtime` symlinked to `Etc/UTC` — and the agent confidently reports UTC as local time even though the host clock is fine.
 
 ## First-time setup
 

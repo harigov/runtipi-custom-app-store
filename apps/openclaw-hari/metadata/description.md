@@ -19,16 +19,14 @@ This instance is isolated from any other OpenClaw deployment in this Runtipi sto
 Runtipi's dynamic compose schema does not support `build:` directives, so the Matrix plugin can't be baked into the image at build time. You install it once via `docker exec`, and it persists across restarts and container recreations because the OpenClaw config directory is a host bind mount at `${APP_DATA_DIR}/data/config/`.
 
 ```bash
-# Note the --dangerously-force-unsafe-install flag — required because OpenClaw's
-# static analyzer flags @openclaw/matrix's child_process use (legitimate; needed
-# to install matrix-sdk-crypto-nodejs runtime deps). Plugin is officially signed
-# (channel=official verification=source-linked), so the override is appropriate.
 docker exec -it openclaw-hari_personal-apps-openclaw-hari-gateway-1 \
-  openclaw plugins install @openclaw/matrix --dangerously-force-unsafe-install
+  openclaw plugins install @openclaw/matrix
 
 docker exec -it openclaw-hari_personal-apps-openclaw-hari-gateway-1 \
   openclaw channels add
 ```
+
+> The `--dangerously-force-unsafe-install` flag this used to require is **no longer needed**. As of 2026.7.1 the install-time dangerous-code scanner has been removed upstream; passing the flag prints a deprecation notice and does nothing. Install-time policy is now `security.installPolicy` in `openclaw.json`.
 
 The wizard prompts for: homeserver URL, access token (or user/password), device name, E2EE on/off, and room allowlist. For a Conduit instance running as a sibling Runtipi app, set `homeserver` to either:
 
@@ -39,21 +37,27 @@ The wizard prompts for: homeserver URL, access token (or user/password), device 
 
 **Why this is OK now (when it wasn't before):** the install writes plugin files into the bind-mounted host directory. As long as `${APP_DATA_DIR}/data/config/` exists on the host, the plugin survives container recreation, image upgrades, and host reboots.
 
+## Timezone
+
+Leave the **Timezone** field blank and the container inherits the Runtipi server's timezone (Settings → General → Timezone), which Runtipi exposes to every app as `TZ`. Fill the field in only if this instance should run on a different clock than the server.
+
+This matters because the image ships with `/etc/localtime` symlinked to `Etc/UTC`. With no `TZ` set the agent reads the wall clock as UTC and gets "what time is it", relative dates, and scheduling wrong — even though the host clock is correct. Setting `TZ` to an IANA name is sufficient here: the image bundles full tzdata, and Node resolves the zone from `TZ` directly.
+
 ## Adding more plugins
 
 Same pattern — `docker exec ... openclaw plugins install @openclaw/<name>`. Persists once installed. The available channel plugins are listed in <https://docs.openclaw.ai/tools/plugin>.
 
-## Why we're pinned to 2026.4.20 (and not the latest)
+## Why 2026.7.1 (and not the newest tag)
 
-The `@openclaw/matrix` plugin on npm is at version **2026.3.13** and hasn't been republished since the OpenClaw plugin-SDK refactor that landed around **2026.4.25**. Newer image tags (2026.4.25+) refactored `dist/plugin-sdk/root-alias.cjs/` from a directory of per-channel files into a single file, which breaks the matrix plugin's `import "openclaw/plugin-sdk/matrix"`. We also can't use `2026.4.24` — issue [#72186](https://github.com/openclaw/openclaw/issues/72186) is a matrix-js-sdk regression in that build.
+The old `2026.4.20` pin is lifted. It existed because `@openclaw/matrix` was stuck at `2026.3.13` and targeted the pre-refactor plugin-SDK layout, which OpenClaw 2026.4.25 changed. The plugin has since been republished and now tracks core releases — `@openclaw/matrix@2026.7.1` declares `peerDependencies: { openclaw: ">=2026.7.1" }`, so the old pin is now the broken combination.
 
-`2026.4.20` is the most recent tag that:
-- Still has the old `root-alias.cjs/` directory layout the matrix plugin expects.
-- Is before the matrix-sync regression in `2026.4.24`.
+We pin **`2026.7.1`** rather than npm's `latest` (`2026.7.1-2`) deliberately: under semver a `-2` suffix parses as a *prerelease* of `2026.7.1`, so `2026.7.1-2` does **not** satisfy the plugin's `>=2026.7.1` peer range. `2026.7.1` matches cleanly. Verified: the matrix plugin installs and loads `enabled` on this tag.
 
-**To upgrade:** check that `@openclaw/matrix` on npm has a newer release that targets the post-refactor SDK before bumping the image tag. Until then, leave it pinned. The Docker tag scheme has no `v` prefix (e.g. `2026.4.20`, not `v2026.4.20`) — distinct from GitHub release tags.
+The Docker tag scheme has no `v` prefix (e.g. `2026.7.1`, not `v2026.7.1`) — distinct from GitHub release tags. Note also that OpenClaw publishes an `extended-stable` channel (currently `2026.6.34`) if you'd rather track a slower-moving line.
 
-## Updating to a newer OpenClaw version (when the plugin catches up)
+## Updating to a newer OpenClaw version
+
+Before bumping, check that `@openclaw/matrix`'s `peerDependencies.openclaw` range on npm still accepts the tag you're moving to — that pairing is what broke this app before.
 
 1. Pick the new version from <https://github.com/openclaw/openclaw/releases> (or the GHCR tags list).
 2. Update three places consistently:

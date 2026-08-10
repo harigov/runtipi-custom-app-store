@@ -11,9 +11,19 @@ This deployment runs two services from the same image:
 
 Both services share the same persistent data directory at `${APP_DATA_DIR}/data/hermes/` (mounted into the container at `/opt/data`, equivalent to `~/.hermes` in the upstream docs).
 
-## Security warning
+## Dashboard login
 
-The dashboard stores API keys and is launched with `--insecure --host 0.0.0.0` so Traefik can route to it. **Do not enable "Expose on internet" for this app unless you've put it behind authentication** (Authelia, Cloudflare Access, basic-auth middleware, etc.). LAN-only or VPN-only access is the safe default.
+The dashboard is password-protected. Set **Dashboard password** at install time (username defaults to `admin`) — use a different password from the Hari instance. Log in with those credentials at the app URL.
+
+This is **required, not optional**: as of the June 2026 hardening, Hermes refuses to serve the dashboard on a non-loopback bind unless an auth provider is registered, and Runtipi has to bind `0.0.0.0` for Traefik. The old `--insecure` flag is now a deprecated no-op — with no password set the dashboard container exits on startup.
+
+**Still be careful about exposure.** The dashboard holds your API keys; LAN-only or VPN-only access remains the safer default.
+
+## Timezone
+
+Leave the **Timezone** field blank and both services inherit the Runtipi server's timezone (Settings → General → Timezone). Set it only if this instance should run on a different clock than the server.
+
+It sets both `TZ` (the OS-level zone Python reads) and `HERMES_TIMEZONE` (Hermes's own setting, which drives the agent's sense of "now" and its cron scheduling). Without them the container falls back to UTC — the image ships `/etc/localtime` pointing at `Etc/UTC` — and the agent reports UTC as local time. See `apps/hermes-hari/metadata/description.md` for the full detail.
 
 ## First-time setup
 

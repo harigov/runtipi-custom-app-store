@@ -11,7 +11,7 @@
   "author": "openclaw",
   "source": "https://github.com/openclaw/openclaw",
   "website": "https://docs.openclaw.ai",
-  "version": "2026.4.20",
+  "version": "2026.7.1",
   "tipi_version": 10,
   "categories": [
     "ai",
@@ -81,8 +81,7 @@
       "label": "Timezone",
       "env_variable": "OPENCLAW_TZ",
       "required": false,
-      "default": "America/New_York",
-      "hint": "IANA timezone name (e.g. America/New_York, Europe/London)."
+      "hint": "IANA timezone name (e.g. America/New_York, Europe/London). Leave blank to inherit the Runtipi server's timezone (Settings \u2192 General \u2192 Timezone) \u2014 that's usually what you want. Set it only if this instance should run on a different clock than the server."
     }
   ]
 }

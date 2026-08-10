@@ -3,7 +3,7 @@
   "services": [
     {
       "name": "hermes-hari-gateway",
-      "image": "nousresearch/hermes-agent:v2026.4.30",
+      "image": "nousresearch/hermes-agent:v2026.8.3",
       "internalPort": 8642,
       "addToMainNetwork": true,
       "restart": "unless-stopped",
@@ -11,6 +11,8 @@
       "environment": [
         {"key": "HERMES_UID", "value": "10000"},
         {"key": "HERMES_GID", "value": "10000"},
+        {"key": "TZ", "value": "${HERMES_TZ:-${TZ}}"},
+        {"key": "HERMES_TIMEZONE", "value": "${HERMES_TZ:-${TZ}}"},
         {"key": "API_SERVER_HOST", "value": "0.0.0.0"},
         {"key": "API_SERVER_KEY", "value": "${API_SERVER_KEY}"},
         {"key": "OPENAI_API_KEY", "value": "${OPENAI_API_KEY:-}"},
@@ -32,16 +34,21 @@
     },
     {
       "name": "hermes-hari-dashboard",
-      "image": "nousresearch/hermes-agent:v2026.4.30",
+      "image": "nousresearch/hermes-agent:v2026.8.3",
       "isMain": true,
       "internalPort": 9119,
       "restart": "unless-stopped",
       "dependsOn": ["hermes-hari-gateway"],
-      "command": ["dashboard", "--host", "0.0.0.0", "--insecure", "--no-open"],
+      "command": ["dashboard", "--host", "0.0.0.0", "--no-open"],
       "environment": [
         {"key": "HERMES_UID", "value": "10000"},
         {"key": "HERMES_GID", "value": "10000"},
-        {"key": "GATEWAY_HEALTH_URL", "value": "http://hermes-hari-gateway:8642"}
+        {"key": "TZ", "value": "${HERMES_TZ:-${TZ}}"},
+        {"key": "HERMES_TIMEZONE", "value": "${HERMES_TZ:-${TZ}}"},
+        {"key": "GATEWAY_HEALTH_URL", "value": "http://hermes-hari-gateway:8642"},
+        {"key": "HERMES_DASHBOARD_BASIC_AUTH_USERNAME", "value": "${DASHBOARD_USERNAME:-admin}"},
+        {"key": "HERMES_DASHBOARD_BASIC_AUTH_PASSWORD", "value": "${DASHBOARD_PASSWORD}"},
+        {"key": "HERMES_DASHBOARD_BASIC_AUTH_SECRET", "value": "${DASHBOARD_SESSION_SECRET}"}
       ],
       "volumes": [
         {"hostPath": "${APP_DATA_DIR}/data/hermes", "containerPath": "/opt/data"}
