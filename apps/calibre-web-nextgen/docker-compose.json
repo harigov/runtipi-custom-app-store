@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 2,
+  "services": [
+    {
+      "name": "calibre-web-nextgen",
+      "image": "ghcr.io/new-usemame/calibre-web-nextgen:v4.1.38",
+      "isMain": true,
+      "internalPort": 8083,
+      "restart": "unless-stopped",
+      "environment": [
+        {"key": "PUID", "value": "${CWA_PUID:-1000}"},
+        {"key": "PGID", "value": "${CWA_PGID:-1000}"},
+        {"key": "TZ", "value": "${CWA_TZ:-${TZ}}"},
+        {"key": "CWA_PORT_OVERRIDE", "value": "8083"},
+        {"key": "NETWORK_SHARE_MODE", "value": "${CWA_NETWORK_SHARE_MODE:-false}"},
+        {"key": "TRUSTED_PROXY_COUNT", "value": "${CWA_TRUSTED_PROXY_COUNT:-1}"},
+        {"key": "CWA_CALIBRE_USER_PLUGINS", "value": "${CWA_CALIBRE_USER_PLUGINS:-false}"},
+        {"key": "HARDCOVER_TOKEN", "value": "${HARDCOVER_TOKEN:-}"},
+        {"key": "COMICVINE_API_KEY", "value": "${COMICVINE_API_KEY:-}"}
+      ],
+      "volumes": [
+        {"hostPath": "${CWA_CONFIG_DIR:-${APP_DATA_DIR}/data/config}", "containerPath": "/config"},
+        {"hostPath": "${CWA_LIBRARY_DIR:-${APP_DATA_DIR}/data/calibre-library}", "containerPath": "/calibre-library"},
+        {"hostPath": "${CWA_INGEST_DIR:-${APP_DATA_DIR}/data/ingest}", "containerPath": "/cwa-book-ingest"}
+      ]
+    }
+  ]
+}

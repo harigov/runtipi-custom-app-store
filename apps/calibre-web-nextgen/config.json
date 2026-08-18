@@ -1,0 +1,110 @@
+{
+  "name": "Calibre-Web NextGen",
+  "id": "calibre-web-nextgen",
+  "available": true,
+  "port": 8083,
+  "exposable": true,
+  "dynamic_config": true,
+  "no_gui": false,
+  "description": "Self-hosted ebook library manager — the community continuation of Calibre-Web-Automated. Browse, read, and send books from a modern web UI, with automatic ingest of anything dropped into a watch folder, format conversion via a bundled Calibre binary, metadata enforcement, kepubify, and Kobo / KOReader sync. The Calibre library directory, the settings directory, and the ingest folder are each configurable to any host path, so the library can live on a NAS mount or a dedicated disk instead of inside the Runtipi app data directory.",
+  "short_desc": "Ebook library with auto-ingest, conversion, and Kobo/KOReader sync",
+  "author": "new-usemame and contributors",
+  "source": "https://github.com/new-usemame/Calibre-Web-NextGen",
+  "website": "https://calibrewebnextgen.com",
+  "version": "v4.1.38",
+  "tipi_version": 1,
+  "categories": [
+    "books",
+    "media"
+  ],
+  "min_tipi_version": "4.5.0",
+  "force_pull": false,
+  "supported_architectures": [
+    "amd64",
+    "arm64"
+  ],
+  "form_fields": [
+    {
+      "type": "text",
+      "label": "Calibre library directory (host path)",
+      "env_variable": "CWA_LIBRARY_DIR",
+      "required": false,
+      "hint": "Absolute host path to the Calibre library — this is the folder holding metadata.db and the book files. Point it at an existing library (e.g. /mnt/nas/books) to adopt it as-is, or leave blank to keep it inside this app's data directory. Must be an absolute path that already exists on the host; Docker will silently create an empty root-owned directory if it does not."
+    },
+    {
+      "type": "text",
+      "label": "Settings directory (host path)",
+      "env_variable": "CWA_CONFIG_DIR",
+      "required": false,
+      "hint": "Absolute host path for app.db and cwa.db — user accounts, OAuth tokens, KOReader sync state, and logs. Separate from the library above. Leave blank to keep it inside this app's data directory, which is what you want unless you are migrating an existing install."
+    },
+    {
+      "type": "text",
+      "label": "Ingest directory (host path)",
+      "env_variable": "CWA_INGEST_DIR",
+      "required": false,
+      "hint": "Absolute host path to the auto-import watch folder. Books dropped here are converted, tagged, filed into the library, and then DELETED from this folder — never point it at long-term storage or at a folder nested inside the library. Leave blank to keep it inside this app's data directory."
+    },
+    {
+      "type": "number",
+      "label": "File owner UID",
+      "env_variable": "CWA_PUID",
+      "required": false,
+      "default": 1000,
+      "hint": "UID the container writes files as. Must match the owner of the library directory above, or ingest fails with permission errors. Check with 'stat -c %u /path/to/library' on the host."
+    },
+    {
+      "type": "number",
+      "label": "File owner GID",
+      "env_variable": "CWA_PGID",
+      "required": false,
+      "default": 1000,
+      "hint": "GID the container writes files as. Match the group owning the library directory ('stat -c %g /path/to/library')."
+    },
+    {
+      "type": "text",
+      "label": "Timezone",
+      "env_variable": "CWA_TZ",
+      "required": false,
+      "hint": "IANA timezone name (e.g. America/New_York, Asia/Kolkata). Leave blank to inherit the Runtipi server's timezone (Settings → General → Timezone) — that's usually what you want. Without it the container reads the clock as UTC, so 'date added' timestamps and scheduled tasks drift."
+    },
+    {
+      "type": "boolean",
+      "label": "Library is on a network share",
+      "env_variable": "CWA_NETWORK_SHARE_MODE",
+      "required": false,
+      "default": false,
+      "hint": "Enable ONLY if the library directory above is an NFS or SMB/CIFS mount. It disables SQLite WAL mode and inotify polling, which corrupt or silently miss changes over network filesystems. Leave off for local disks — it is slower."
+    },
+    {
+      "type": "number",
+      "label": "Trusted proxy count",
+      "env_variable": "CWA_TRUSTED_PROXY_COUNT",
+      "required": false,
+      "default": 1,
+      "hint": "Number of reverse proxies in front of the app. Runtipi puts Traefik in front, so 1 is correct here; without it the login loop repeats because the app sees the proxy's IP change. Raise only if you front Runtipi with another proxy (e.g. 2 for a Cloudflare Tunnel plus Traefik). Must be a plain integer — the app does int() on it with no error handling and crashes on startup if it isn't."
+    },
+    {
+      "type": "boolean",
+      "label": "Enable Calibre plugins",
+      "env_variable": "CWA_CALIBRE_USER_PLUGINS",
+      "required": false,
+      "default": false,
+      "hint": "Loads third-party Calibre plugins from the settings directory (<config>/.config/calibre/plugins). Leave off unless you have plugins to install."
+    },
+    {
+      "type": "password",
+      "label": "Hardcover API token",
+      "env_variable": "HARDCOVER_TOKEN",
+      "required": false,
+      "hint": "Optional. Enables metadata lookup and reading-progress sync with hardcover.app. Get a token at https://hardcover.app/account/api."
+    },
+    {
+      "type": "password",
+      "label": "ComicVine API key",
+      "env_variable": "COMICVINE_API_KEY",
+      "required": false,
+      "hint": "Optional. Improves metadata matching for comics and graphic novels. Get a key at https://comicvine.gamespot.com/api/."
+    }
+  ]
+}
