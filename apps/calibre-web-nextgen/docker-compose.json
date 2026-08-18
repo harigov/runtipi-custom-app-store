@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 2,
+  "services": [
+    {
+      "name": "calibre-web-nextgen",
+      "image": "ghcr.io/new-usemame/calibre-web-nextgen:v4.1.38",
+      "isMain": true,
+      "internalPort": 8083,
+      "restart": "unless-stopped",
+      "environment": [
+        {
+          "key": "PUID",
+          "value": "${CWA_PUID:-1000}"
+        },
+        {
+          "key": "PGID",
+          "value": "${CWA_PGID:-1000}"
+        },
+        {
+          "key": "TZ",
+          "value": "${CWA_TZ:-${TZ}}"
+        },
+        {
+          "key": "CWA_ADMIN_PASSWORD",
+          "value": "${CWA_ADMIN_PASSWORD:-}"
+        },
+        {
+          "key": "CWA_PORT_OVERRIDE",
+          "value": "8083"
+        },
+        {
+          "key": "NETWORK_SHARE_MODE",
+          "value": "${CWA_NETWORK_SHARE_MODE:-false}"
+        },
+        {
+          "key": "TRUSTED_PROXY_COUNT",
+          "value": "${CWA_TRUSTED_PROXY_COUNT:-1}"
+        },
+        {
+          "key": "CWA_CALIBRE_USER_PLUGINS",
+          "value": "${CWA_CALIBRE_USER_PLUGINS:-false}"
+        },
+        {
+          "key": "HARDCOVER_TOKEN",
+          "value": "${HARDCOVER_TOKEN:-}"
+        },
+        {
+          "key": "COMICVINE_API_KEY",
+          "value": "${COMICVINE_API_KEY:-}"
+        }
+      ],
+      "volumes": [
+        {
+          "hostPath": "${CWA_CONFIG_DIR:-${APP_DATA_DIR}/data/config}",
+          "containerPath": "/config"
+        },
+        {
+          "hostPath": "${CWA_LIBRARY_DIR:-${APP_DATA_DIR}/data/calibre-library}",
+          "containerPath": "/calibre-library"
+        },
+        {
+          "hostPath": "${CWA_INGEST_DIR:-${APP_DATA_DIR}/data/ingest}",
+          "containerPath": "/cwa-book-ingest"
+        }
+      ],
+      "command": [
+        "/usr/bin/with-contenv",
+        "bash",
+        "-c",
+        "PW=\"$$CWA_ADMIN_PASSWORD\"; if [ -n \"$$PW\" ]; then sig=$$(printf %s \"$$PW\" | sha256sum | cut -d\" \" -f1); sf=/config/.runtipi-admin-password.sig; if [ \"$$(cat \"$$sf\" 2>/dev/null)\" != \"$$sig\" ]; then n=0; while [ ! -f /config/app.db ] && [ $$n -lt 60 ]; do sleep 2; n=$$((n+1)); done; if s6-setuidgid abc python3 -P -m cps -s \"admin:$$PW\" >/dev/null 2>&1; then printf %s \"$$sig\" > \"$$sf\"; echo \"[runtipi] admin password applied from CWA_ADMIN_PASSWORD\"; else echo \"[runtipi] WARNING: admin password not applied - it must be at least 8 characters with an uppercase, a lowercase, a digit and a special character; the existing password is unchanged\" >&2; fi; fi; fi"
+      ]
+    }
+  ]
+}

@@ -151,6 +151,33 @@ Rules this depends on:
 - **Don't replace `entrypoint`.** The Hermes image entrypoint is `/opt/hermes/docker/entrypoint-dispatch.sh` → s6 `/init` → `main-wrapper.sh`, which drops root to uid 10000. It routes args as: first arg is an executable → exec it directly; otherwise → `hermes <args>`. That's exactly why `command: ["sh","-c",…]` works while keeping the supervision tree and the privilege drop. OpenClaw's entrypoint is `tini -s --`, which execs whatever it's given.
 - These fields win on every restart, overriding a model picked in the Hermes dashboard / `openclaw models set` / `/model`. That's the documented trade-off in the hints and both descriptions — don't "fix" it by making the write first-run-only without saying so.
 
+## s6-overlay images: `command` runs post-start and needs `with-contenv`
+
+`calibre-web-nextgen` is an LSIO/s6-overlay image (`ENTRYPOINT ["/init"]`, no `CMD`), and it does **not** behave like the Hermes/OpenClaw pattern above. Verified by running the image, not by reading docs:
+
+- **`command` does not replace the app.** s6 starts its supervised services first, *then* runs the container `CMD` as a one-shot. The log order is `[ls.io-init] done` → your command. So there is no `exec`-the-real-process step — write the command as a plain side-effect script with no `exec` tail.
+- **The container stays up after the command exits.** s6 keeps supervising, so a short-lived `CMD` is safe here. Do not add `sleep infinity`.
+- **s6 strips the container environment from `CMD`.** A bare `bash -c 'echo $FOO'` prints empty even with `-e FOO=bar`; the value lives in `/run/s6/container_environment/FOO`. This fails *silently* — the script runs, reads an empty var, and does nothing. Wrap the command in `/usr/bin/with-contenv`:
+
+  ```json
+  "command": ["/usr/bin/with-contenv", "bash", "-c", "…"]
+  ```
+
+- **Drop privileges yourself.** The one-shot runs as root, so writes to `/config` land root-owned unless prefixed with `s6-setuidgid abc` (uid/gid 1000, the `PUID`/`PGID` user).
+
+The `$$`-escaping rule from the model-selection section still applies unchanged.
+
+### Applying a value only when it changes
+
+For anything a user can also edit inside the app (a password, a model), re-applying on every boot silently reverts their in-app change. Guard on a hash of the value instead of a plain "already ran" marker:
+
+```sh
+sig=$$(printf %s "$$PW" | sha256sum | cut -d" " -f1)
+[ "$$(cat "$$sf" 2>/dev/null)" != "$$sig" ] && apply && printf %s "$$sig" > "$$sf"
+```
+
+A plain restart is then a no-op, while editing the Runtipi form field does rotate the value. `calibre-web-nextgen` uses this for the admin password, which also means the app never sits on the upstream default `admin123`. Note the app enforces its own password policy (8+ chars, upper, lower, digit, special) and Runtipi `random` fields cannot satisfy it — `hex` is lowercase and digits only, and `base64` has no guaranteed special character — so that field is a user-supplied `password`, not a `random`.
+
 ## Plugin / extension persistence (OpenClaw lesson)
 
 Runtime-installed OpenClaw plugins (`docker exec ... openclaw plugins install @openclaw/<name>`) **do persist** across restarts and container recreation in this store, because OpenClaw's `~/.openclaw/` directory is bind-mounted to a host path under `${APP_DATA_DIR}/data/config/`. The "plugins disappear on restart" problem the user hit with third-party Runtipi apps was caused by anonymous/named Docker volumes that get wiped — the bind-mount approach avoids that entirely.
