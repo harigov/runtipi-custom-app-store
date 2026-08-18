@@ -12,7 +12,7 @@
   "source": "https://github.com/NousResearch/hermes-agent",
   "website": "https://hermes-agent.nousresearch.com",
   "version": "v2026.8.3",
-  "tipi_version": 7,
+  "tipi_version": 8,
   "categories": [
     "ai",
     "automation"
@@ -68,6 +68,20 @@
       "env_variable": "HERMES_TZ",
       "required": false,
       "hint": "IANA timezone name (e.g. America/New_York, Asia/Kolkata). Leave blank to inherit the Runtipi server's timezone (Settings \u2192 General \u2192 Timezone) \u2014 that's usually what you want. This is what the agent uses for 'what time is it', scheduling, and cron; without it the agent reads the clock as UTC."
+    },
+    {
+      "type": "text",
+      "label": "LLM model",
+      "env_variable": "HERMES_LLM_MODEL",
+      "required": false,
+      "hint": "Model id spelled the way the provider below names it — the same model has a different id per route. Via OpenRouter: anthropic/claude-opus-4.7. Anthropic direct: claude-opus-4-7. OpenAI: gpt-5.6. Written to model.default in config.yaml on every gateway start, so this field wins over a model picked in the dashboard or with /model. Leave blank to manage the model there instead."
+    },
+    {
+      "type": "text",
+      "label": "LLM provider",
+      "env_variable": "HERMES_LLM_PROVIDER",
+      "required": false,
+      "hint": "Which provider serves the model above: openrouter, anthropic, openai, nous, ollama, … or 'auto' to let Hermes pick based on the API keys it finds. Written to model.provider in config.yaml on every gateway start. Leave blank to leave the current setting alone."
     },
     {
       "type": "password",

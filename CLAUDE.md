@@ -130,6 +130,27 @@ Wire it through the basic-auth plugin's env overrides (`plugins/dashboard_auth/b
 - `HERMES_DASHBOARD_BASIC_AUTH_PASSWORD` (plaintext; `_PASSWORD_HASH` also accepted)
 - `HERMES_DASHBOARD_BASIC_AUTH_SECRET` — signs session tokens; without a fixed value every restart logs you out
 
+## Model selection: config-file writes at container start, not env vars
+
+Neither app can have its model set by an env var — verified against the running images, not just the docs:
+
+- **Hermes.** `HERMES_MODEL` / `HERMES_INFERENCE_MODEL` are read only by `cron/scheduler.py`, `tui_gateway/`, and `hermes_cli/oneshot.py`. Nothing under `gateway/` reads them, so for the `gateway run` process behind Matrix/Slack they are silently inert. The gateway resolves `config.yaml`'s `model.default` / `model.provider`.
+- **OpenClaw.** No model env var exists at all; the only `OPENCLAW_MODEL*` symbol in `/app/dist` is `OPENCLAW_MODEL_ID = "openclaw"`, an unrelated internal constant. The model lives at `agents.defaults.model.primary` in `openclaw.json`.
+
+So the form field is applied by wrapping the service `command` in `sh -c`, running the app's own non-interactive config CLI, then `exec`ing the real process:
+
+- Hermes: `hermes config set model.provider|model.default …; exec hermes gateway run`
+- OpenClaw: `node openclaw.mjs config set agents.defaults.model.primary …; exec node openclaw.mjs gateway …`
+
+Both writes land in the `${APP_DATA_DIR}` bind mount, so they persist. Guard each with `[ -n "$$VAR" ]` — blank means "don't touch the config" — and `|| echo WARNING >&2` rather than `&&`, so a bad value never blocks startup.
+
+Rules this depends on:
+
+- **Escape the shell's `$` as `$$` inside `command`.** Runtipi passes the string through to the generated compose file verbatim; Docker Compose then turns `$$VAR` into a literal `$VAR` for the shell to expand at runtime. Writing `${VAR}` instead would splice the value in textually at compose-parse time and break on any quote in it.
+- **Name the form field's env var something the app doesn't read** (`HERMES_LLM_MODEL`, `OPENCLAW_LLM_MODEL`). Naming it `HERMES_MODEL` would also pin the cron scheduler to a value that stops tracking later `/model` switches.
+- **Don't replace `entrypoint`.** The Hermes image entrypoint is `/opt/hermes/docker/entrypoint-dispatch.sh` → s6 `/init` → `main-wrapper.sh`, which drops root to uid 10000. It routes args as: first arg is an executable → exec it directly; otherwise → `hermes <args>`. That's exactly why `command: ["sh","-c",…]` works while keeping the supervision tree and the privilege drop. OpenClaw's entrypoint is `tini -s --`, which execs whatever it's given.
+- These fields win on every restart, overriding a model picked in the Hermes dashboard / `openclaw models set` / `/model`. That's the documented trade-off in the hints and both descriptions — don't "fix" it by making the write first-run-only without saying so.
+
 ## Plugin / extension persistence (OpenClaw lesson)
 
 Runtime-installed OpenClaw plugins (`docker exec ... openclaw plugins install @openclaw/<name>`) **do persist** across restarts and container recreation in this store, because OpenClaw's `~/.openclaw/` directory is bind-mounted to a host path under `${APP_DATA_DIR}/data/config/`. The "plugins disappear on restart" problem the user hit with third-party Runtipi apps was caused by anonymous/named Docker volumes that get wiped — the bind-mount approach avoids that entirely.

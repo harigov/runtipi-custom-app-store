@@ -41,6 +41,28 @@ Without these the container falls back to UTC — the image ships `/etc/localtim
    - **OpenAI-compatible endpoint:** set both `OPENAI_API_KEY` and `OPENAI_BASE_URL`.
 3. Open the dashboard. On first launch it walks through model selection, terminal backend choice, and any messaging integrations.
 
+## Choosing the model
+
+The **LLM model** and **LLM provider** fields set which model the agent runs on, without opening the dashboard.
+
+Model ids are provider-specific — the *same* model is spelled differently depending on who serves it:
+
+| Route | LLM provider | LLM model |
+|---|---|---|
+| OpenRouter | `openrouter` | `anthropic/claude-opus-4.7` (vendor prefix is part of the id) |
+| Anthropic direct | `anthropic` | `claude-opus-4-7` |
+| OpenAI direct | `openai` | `gpt-5.6` |
+| Nous Portal | `nous` | as listed in the portal |
+| Let Hermes decide | `auto` | — resolved from whichever API keys are set |
+
+Make sure the matching API key field is filled in for the provider you pick.
+
+**How it's applied:** the gateway container runs `hermes config set model.provider` / `model.default` on startup, before `hermes gateway run`. Both fields are optional and each is skipped when blank, so leaving them empty keeps whatever is already in `config.yaml`.
+
+**The trade-off:** because the write happens on every start, these fields win over a model chosen in the dashboard's Models page or with `/model` in a chat — a container restart reverts to what's in the Runtipi form. Pick one place to own the setting: fill the fields in and manage the model from Runtipi, or leave them blank and manage it from the dashboard.
+
+Note that the `HERMES_MODEL` env var upstream documents is *not* a substitute here: only the cron scheduler, the TUI, and `hermes chat` read it — `gateway run` (the process backing Matrix/Slack) resolves its model from `config.yaml` alone.
+
 ## Matrix integration with on-server Conduit
 
 The form exposes the core Matrix env vars (`MATRIX_HOMESERVER`, `MATRIX_ACCESS_TOKEN`, `MATRIX_USER_ID`, `MATRIX_ALLOWED_USERS`, `MATRIX_ENCRYPTION`). Setup steps:

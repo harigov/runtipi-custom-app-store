@@ -12,7 +12,13 @@ This instance is isolated from any other OpenClaw deployment in this Runtipi sto
    - **OpenAI direct:** set `OPENAI_API_KEY`, leave `OPENAI_BASE_URL` blank.
    - **Custom OpenAI-compatible endpoint:** set both `OPENAI_API_KEY` and `OPENAI_BASE_URL`.
 3. Open the gateway URL from the Runtipi dashboard. Authenticate with the gateway token.
-4. From the gateway UI, choose your default model.
+4. Set the **LLM model** field, or choose the default model from the gateway UI instead (see below).
+
+## Choosing the model
+
+The **LLM model** field sets the agent's primary model without opening the gateway UI. Refs are `provider/model`, split on the first slash, so an OpenRouter id keeps its vendor prefix in the model half: `openrouter/anthropic/claude-opus-4.7` via OpenRouter, `anthropic/claude-opus-4-7` against Anthropic directly, `openai/gpt-5.6` on OpenAI. Match the ref to whichever provider key you configured.
+
+The container applies it with `openclaw config set agents.defaults.model.primary` on startup; a blank field is skipped, leaving `openclaw.json` alone. Because the write happens on every start, this field overrides `openclaw models set` and `/model` whenever the container restarts — own the setting in one place or the other. See `apps/openclaw-hari/metadata/description.md` for the full detail.
 
 ## Matrix integration (one-time install)
 

@@ -34,6 +34,12 @@ It sets both `TZ` (the OS-level zone Python reads) and `HERMES_TIMEZONE` (Hermes
    - **OpenAI-compatible endpoint:** set both `OPENAI_API_KEY` and `OPENAI_BASE_URL`.
 3. Open the dashboard. On first launch it walks through model selection, terminal backend choice, and any messaging integrations.
 
+## Choosing the model
+
+The **LLM model** and **LLM provider** fields set which model the agent runs on, without opening the dashboard. Model ids are provider-specific — via OpenRouter the id is `anthropic/claude-opus-4.7` (provider `openrouter`), against Anthropic directly it's `claude-opus-4-7` (provider `anthropic`), on OpenAI it's `gpt-5.6` (provider `openai`). Use `auto` as the provider to let Hermes resolve it from whichever API keys are set, and make sure the matching key field is filled in.
+
+The gateway container applies them with `hermes config set model.provider` / `model.default` on startup; blank fields are skipped, leaving `config.yaml` alone. Because the write happens on every start, these fields override a model picked in the dashboard or with `/model` whenever the container restarts — own the setting in one place or the other. See `apps/hermes-hari/metadata/description.md` for the full detail.
+
 ## Matrix integration with on-server Conduit
 
 The form exposes the core Matrix env vars (`MATRIX_HOMESERVER`, `MATRIX_ACCESS_TOKEN`, `MATRIX_USER_ID`, `MATRIX_ALLOWED_USERS`, `MATRIX_ENCRYPTION`). Setup steps:

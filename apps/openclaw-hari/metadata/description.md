@@ -12,7 +12,26 @@ This instance is isolated from any other OpenClaw deployment in this Runtipi sto
    - **OpenAI direct:** set `OPENAI_API_KEY`, leave `OPENAI_BASE_URL` blank.
    - **Custom OpenAI-compatible endpoint:** set both `OPENAI_API_KEY` and `OPENAI_BASE_URL`.
 3. Open the gateway URL from the Runtipi dashboard. Authenticate with the gateway token.
-4. From the gateway UI, choose your default model. For OpenRouter, use the form `openrouter/<provider>/<model>` (e.g. `openrouter/anthropic/claude-sonnet-4`).
+4. Set the **LLM model** field, or choose the default model from the gateway UI instead (see below).
+
+## Choosing the model
+
+The **LLM model** field sets the agent's primary model without opening the gateway UI. OpenClaw model refs are `provider/model`, split on the *first* slash — so an OpenRouter id keeps its vendor prefix inside the model half:
+
+| Route | LLM model |
+|---|---|
+| OpenRouter | `openrouter/anthropic/claude-opus-4.7` |
+| Anthropic direct | `anthropic/claude-opus-4-7` |
+| OpenAI direct | `openai/gpt-5.6` |
+| Local Ollama | `ollama/gemma4:26b` |
+
+The same model is named differently per route, so the ref has to match whichever provider's key you configured above.
+
+**How it's applied:** the container runs `openclaw config set agents.defaults.model.primary <ref>` on startup, before `openclaw gateway`. The write is skipped when the field is blank, so leaving it empty keeps whatever is in `openclaw.json`. Setting it also auto-enables that provider's plugin — the gateway log line to look for is `agent model: openrouter/anthropic/claude-opus-4.7`.
+
+**The trade-off:** because the write happens on every start, this field wins over `openclaw models set` and `/model` — a container restart reverts to what's in the Runtipi form. Either fill it in and manage the model from Runtipi, or leave it blank and manage it from the gateway UI.
+
+OpenClaw has no model env var to do this with (`OPENCLAW_MODEL` doesn't exist — the only `OPENCLAW_MODEL*` symbol in the bundle is an unrelated internal constant), which is why this goes through the config file.
 
 ## Matrix integration (one-time install)
 

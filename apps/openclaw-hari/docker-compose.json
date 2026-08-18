@@ -8,11 +8,12 @@
       "internalPort": 18789,
       "restart": "unless-stopped",
       "extraHosts": ["host.docker.internal:host-gateway"],
-      "command": ["node", "openclaw.mjs", "gateway", "--allow-unconfigured", "--bind", "lan", "--port", "18789"],
+      "command": ["sh", "-c", "if [ -n \"$$OPENCLAW_LLM_MODEL\" ]; then node openclaw.mjs config set agents.defaults.model.primary \"$$OPENCLAW_LLM_MODEL\" || echo '[runtipi] WARNING: could not apply OPENCLAW_LLM_MODEL; leaving openclaw.json as-is' >&2; fi; exec node openclaw.mjs gateway --allow-unconfigured --bind lan --port 18789"],
       "environment": [
         {"key": "HOME", "value": "/home/node"},
         {"key": "TERM", "value": "xterm-256color"},
         {"key": "TZ", "value": "${OPENCLAW_TZ:-${TZ}}"},
+        {"key": "OPENCLAW_LLM_MODEL", "value": "${OPENCLAW_LLM_MODEL:-}"},
         {"key": "OPENCLAW_GATEWAY_TOKEN", "value": "${OPENCLAW_GATEWAY_TOKEN}"},
         {"key": "OPENCLAW_DISABLE_BONJOUR", "value": "1"},
         {"key": "OPENAI_API_KEY", "value": "${OPENAI_API_KEY:-}"},
