@@ -44,7 +44,17 @@ If the library lives on an NFS or SMB/CIFS mount, turn on **Library is on a netw
 
 ## First login
 
-Default credentials are `admin` / `admin123`. **Change them immediately** on first login under Profile → Account.
+Set **Admin password** at install time and the app never sits on the well-known default. The username stays `admin`. Leave the field blank and the upstream default `admin123` applies instead — in that case change it immediately under Profile → Account.
+
+The password must satisfy the app's own policy: at least 8 characters with an uppercase letter, a lowercase letter, a digit, and a special character. A weaker value is rejected by the app, and the container still starts normally and logs
+
+```
+[runtipi] WARNING: admin password not applied - it must be at least 8 characters ...
+```
+
+leaving the previous password in place. It never blocks startup.
+
+The password is applied only when the field's value *changes*, tracked by a hash in `/config/.runtipi-admin-password.sig`. So a restart will not overwrite a password you later changed in the web UI, while editing the field in Runtipi does rotate it. To force a re-apply, delete that file.
 
 To use the metadata-fetch and cover-download features, also enable "Allow Uploads" under Admin → Feature Configuration.
 
@@ -63,6 +73,8 @@ Leave the **Timezone** field blank and the container inherits the Runtipi server
 3. If migrating from a CWA or Calibre-Web install, set **Settings directory** to that install's `/config` folder to keep users, shelves, and sync state.
 4. Leave **Trusted proxy count** at `1` — it must be a plain integer, since the app calls `int()` on it with no error handling and fails to start on anything else.
 5. Confirm ownership matches the UID/GID fields, then start the app.
+
+Note that when **Library is on a network share** is enabled, the image deliberately skips its startup `chown` of `/config`, `/calibre-library`, and `/cwa-book-ingest` — on a network share that operation is slow and often fails outright. Ownership on those mounts is then entirely yours to get right.
 
 ## Upgrades
 

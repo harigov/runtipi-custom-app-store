@@ -25,6 +25,13 @@
   ],
   "form_fields": [
     {
+      "type": "password",
+      "label": "Admin password",
+      "env_variable": "CWA_ADMIN_PASSWORD",
+      "required": false,
+      "hint": "Replaces the built-in default admin password on first start, so the app never sits on the well-known 'admin123'. Username stays 'admin'. Must be at least 8 characters with an uppercase letter, a lowercase letter, a digit and a special character — the app rejects anything weaker, and if it does the container still starts and logs a warning, leaving the previous password in place. Applied only when this value changes, so a password you later change in the web UI is not overwritten on restart. Leave blank to keep the default admin123 and change it yourself after first login."
+    },
+    {
       "type": "text",
       "label": "Calibre library directory (host path)",
       "env_variable": "CWA_LIBRARY_DIR",
