@@ -1,0 +1,76 @@
+{
+  "name": "Journiv",
+  "id": "journiv",
+  "available": true,
+  "port": 8000,
+  "exposable": true,
+  "dynamic_config": true,
+  "no_gui": false,
+  "description": "Self-hosted private journaling — mood tracking, writing prompts, media, analytics, and Immich integration. Official production stack: PostgreSQL, Valkey, and Celery, with the Journiv image pinned rather than floating on latest.",
+  "short_desc": "Private journal with moods, prompts, and insights",
+  "author": "swalabtech",
+  "source": "https://github.com/journiv/journiv-app",
+  "website": "https://journiv.com",
+  "version": "0.1.0-beta.24",
+  "tipi_version": 1,
+  "categories": [
+    "utilities"
+  ],
+  "min_tipi_version": "4.5.0",
+  "force_pull": false,
+  "supported_architectures": [
+    "amd64",
+    "arm64"
+  ],
+  "form_fields": [
+    {
+      "type": "random",
+      "label": "Secret key",
+      "env_variable": "JOURNIV_SECRET_KEY",
+      "encoding": "hex",
+      "min": 32,
+      "max": 32,
+      "required": true,
+      "hint": "Auto-generated JWT signing key (32 hex characters). Journiv refuses to start without a secret of at least 32 characters. Read the current value from this app's app.env on the host. Rotating it signs everyone out."
+    },
+    {
+      "type": "random",
+      "label": "PostgreSQL password",
+      "env_variable": "JOURNIV_POSTGRES_PASSWORD",
+      "encoding": "hex",
+      "min": 32,
+      "max": 32,
+      "required": true,
+      "hint": "Auto-generated password for the bundled PostgreSQL database. Named per-app so another instance in this store would not inherit the same credential. Do not also set DATABASE_URL — Journiv treats POSTGRES_PASSWORD and DATABASE_URL as mutually exclusive and will refuse to start if both are set."
+    },
+    {
+      "type": "text",
+      "label": "Timezone",
+      "env_variable": "JOURNIV_TZ",
+      "required": false,
+      "hint": "IANA timezone name (e.g. America/New_York, Asia/Kolkata). Leave blank to inherit the Runtipi server's timezone (Settings → General → Timezone) — that's usually what you want. Without it the container reads the clock as UTC, so entry timestamps, 'on this day', and Celery's schedule drift."
+    },
+    {
+      "type": "text",
+      "label": "Public hostname",
+      "env_variable": "JOURNIV_DOMAIN_NAME",
+      "required": false,
+      "hint": "Hostname or IP clients use to reach Journiv, with no scheme and no trailing slash (e.g. journal.example.com or 192.168.1.10). Include the port only if that is what appears in the browser Host header (ip:8000). Leave blank to use Runtipi's APP_DOMAIN. Set this if you see 'Invalid Host Header'."
+    },
+    {
+      "type": "boolean",
+      "label": "Disable new signups",
+      "env_variable": "JOURNIV_DISABLE_SIGNUP",
+      "required": false,
+      "default": false,
+      "hint": "Leave off for the first start so you can create the initial account, then turn it on. Journiv has no separate install-time admin user — the first signup is how you get in. Official production checklist wants this on once that account exists."
+    },
+    {
+      "type": "text",
+      "label": "Immich base URL",
+      "env_variable": "JOURNIV_IMMICH_BASE_URL",
+      "required": false,
+      "hint": "Optional default Immich URL for every user, e.g. http://immich:2283 for the Runtipi Immich app on the same host (the main service joins tipi_main_network so that name resolves). Per-user Immich settings in the Journiv UI still override this. Leave blank to skip."
+    }
+  ]
+}

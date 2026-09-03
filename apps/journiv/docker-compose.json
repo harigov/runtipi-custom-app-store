@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 2,
+  "services": [
+    {
+      "name": "journiv",
+      "image": "swalabtech/journiv-app:0.1.0-beta.24",
+      "isMain": true,
+      "internalPort": 8000,
+      "restart": "unless-stopped",
+      "dependsOn": {
+        "journiv-postgres": {
+          "condition": "service_healthy"
+        },
+        "journiv-valkey": {
+          "condition": "service_healthy"
+        }
+      },
+      "environment": [
+        {
+          "key": "SERVICE_ROLE",
+          "value": "app"
+        },
+        {
+          "key": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "key": "TZ",
+          "value": "${JOURNIV_TZ:-${TZ}}"
+        },
+        {
+          "key": "CELERY_TIMEZONE",
+          "value": "${JOURNIV_TZ:-${TZ}}"
+        },
+        {
+          "key": "SECRET_KEY",
+          "value": "${JOURNIV_SECRET_KEY}"
+        },
+        {
+          "key": "DOMAIN_NAME",
+          "value": "${JOURNIV_DOMAIN_NAME:-${APP_DOMAIN}}"
+        },
+        {
+          "key": "DOMAIN_SCHEME",
+          "value": "${APP_PROTOCOL:-http}"
+        },
+        {
+          "key": "DB_DRIVER",
+          "value": "postgres"
+        },
+        {
+          "key": "POSTGRES_HOST",
+          "value": "journiv-postgres"
+        },
+        {
+          "key": "POSTGRES_PORT",
+          "value": "5432"
+        },
+        {
+          "key": "POSTGRES_USER",
+          "value": "journiv"
+        },
+        {
+          "key": "POSTGRES_DB",
+          "value": "journiv_prod"
+        },
+        {
+          "key": "POSTGRES_PASSWORD",
+          "value": "${JOURNIV_POSTGRES_PASSWORD}"
+        },
+        {
+          "key": "REDIS_URL",
+          "value": "redis://journiv-valkey:6379/0"
+        },
+        {
+          "key": "CELERY_BROKER_URL",
+          "value": "redis://journiv-valkey:6379/0"
+        },
+        {
+          "key": "CELERY_RESULT_BACKEND",
+          "value": "redis://journiv-valkey:6379/0"
+        },
+        {
+          "key": "RATE_LIMIT_STORAGE_URI",
+          "value": "redis://journiv-valkey:6379/1"
+        },
+        {
+          "key": "DISABLE_SIGNUP",
+          "value": "${JOURNIV_DISABLE_SIGNUP:-false}"
+        },
+        {
+          "key": "IMMICH_BASE_URL",
+          "value": "${JOURNIV_IMMICH_BASE_URL:-}"
+        }
+      ],
+      "volumes": [
+        {
+          "hostPath": "${APP_DATA_DIR}/data/app",
+          "containerPath": "/data"
+        }
+      ]
+    },
+    {
+      "name": "journiv-celery-worker",
+      "image": "swalabtech/journiv-app:0.1.0-beta.24",
+      "restart": "unless-stopped",
+      "dependsOn": {
+        "journiv": {
+          "condition": "service_started"
+        },
+        "journiv-postgres": {
+          "condition": "service_healthy"
+        },
+        "journiv-valkey": {
+          "condition": "service_healthy"
+        }
+      },
+      "environment": [
+        {
+          "key": "SERVICE_ROLE",
+          "value": "celery-worker"
+        },
+        {
+          "key": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "key": "TZ",
+          "value": "${JOURNIV_TZ:-${TZ}}"
+        },
+        {
+          "key": "CELERY_TIMEZONE",
+          "value": "${JOURNIV_TZ:-${TZ}}"
+        },
+        {
+          "key": "SECRET_KEY",
+          "value": "${JOURNIV_SECRET_KEY}"
+        },
+        {
+          "key": "DOMAIN_NAME",
+          "value": "${JOURNIV_DOMAIN_NAME:-${APP_DOMAIN}}"
+        },
+        {
+          "key": "DOMAIN_SCHEME",
+          "value": "${APP_PROTOCOL:-http}"
+        },
+        {
+          "key": "DB_DRIVER",
+          "value": "postgres"
+        },
+        {
+          "key": "POSTGRES_HOST",
+          "value": "journiv-postgres"
+        },
+        {
+          "key": "POSTGRES_PORT",
+          "value": "5432"
+        },
+        {
+          "key": "POSTGRES_USER",
+          "value": "journiv"
+        },
+        {
+          "key": "POSTGRES_DB",
+          "value": "journiv_prod"
+        },
+        {
+          "key": "POSTGRES_PASSWORD",
+          "value": "${JOURNIV_POSTGRES_PASSWORD}"
+        },
+        {
+          "key": "REDIS_URL",
+          "value": "redis://journiv-valkey:6379/0"
+        },
+        {
+          "key": "CELERY_BROKER_URL",
+          "value": "redis://journiv-valkey:6379/0"
+        },
+        {
+          "key": "CELERY_RESULT_BACKEND",
+          "value": "redis://journiv-valkey:6379/0"
+        }
+      ],
+      "volumes": [
+        {
+          "hostPath": "${APP_DATA_DIR}/data/app",
+          "containerPath": "/data"
+        }
+      ]
+    },
+    {
+      "name": "journiv-celery-beat",
+      "image": "swalabtech/journiv-app:0.1.0-beta.24",
+      "restart": "unless-stopped",
+      "dependsOn": {
+        "journiv": {
+          "condition": "service_started"
+        },
+        "journiv-postgres": {
+          "condition": "service_healthy"
+        },
+        "journiv-valkey": {
+          "condition": "service_healthy"
+        }
+      },
+      "environment": [
+        {
+          "key": "SERVICE_ROLE",
+          "value": "celery-beat"
+        },
+        {
+          "key": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "key": "TZ",
+          "value": "${JOURNIV_TZ:-${TZ}}"
+        },
+        {
+          "key": "CELERY_TIMEZONE",
+          "value": "${JOURNIV_TZ:-${TZ}}"
+        },
+        {
+          "key": "SECRET_KEY",
+          "value": "${JOURNIV_SECRET_KEY}"
+        },
+        {
+          "key": "DOMAIN_NAME",
+          "value": "${JOURNIV_DOMAIN_NAME:-${APP_DOMAIN}}"
+        },
+        {
+          "key": "DOMAIN_SCHEME",
+          "value": "${APP_PROTOCOL:-http}"
+        },
+        {
+          "key": "DB_DRIVER",
+          "value": "postgres"
+        },
+        {
+          "key": "POSTGRES_HOST",
+          "value": "journiv-postgres"
+        },
+        {
+          "key": "POSTGRES_PORT",
+          "value": "5432"
+        },
+        {
+          "key": "POSTGRES_USER",
+          "value": "journiv"
+        },
+        {
+          "key": "POSTGRES_DB",
+          "value": "journiv_prod"
+        },
+        {
+          "key": "POSTGRES_PASSWORD",
+          "value": "${JOURNIV_POSTGRES_PASSWORD}"
+        },
+        {
+          "key": "REDIS_URL",
+          "value": "redis://journiv-valkey:6379/0"
+        },
+        {
+          "key": "CELERY_BROKER_URL",
+          "value": "redis://journiv-valkey:6379/0"
+        },
+        {
+          "key": "CELERY_RESULT_BACKEND",
+          "value": "redis://journiv-valkey:6379/0"
+        },
+        {
+          "key": "REDBEAT_REDIS_URL",
+          "value": "redis://journiv-valkey:6379/2"
+        }
+      ],
+      "volumes": [
+        {
+          "hostPath": "${APP_DATA_DIR}/data/app",
+          "containerPath": "/data"
+        }
+      ]
+    },
+    {
+      "name": "journiv-postgres",
+      "image": "postgres:18.1",
+      "restart": "unless-stopped",
+      "environment": [
+        {
+          "key": "POSTGRES_USER",
+          "value": "journiv"
+        },
+        {
+          "key": "POSTGRES_PASSWORD",
+          "value": "${JOURNIV_POSTGRES_PASSWORD}"
+        },
+        {
+          "key": "POSTGRES_DB",
+          "value": "journiv_prod"
+        },
+        {
+          "key": "TZ",
+          "value": "${JOURNIV_TZ:-${TZ}}"
+        }
+      ],
+      "volumes": [
+        {
+          "hostPath": "${APP_DATA_DIR}/data/postgres",
+          "containerPath": "/var/lib/postgresql"
+        }
+      ],
+      "healthCheck": {
+        "test": "pg_isready -U journiv -d journiv_prod",
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5,
+        "startPeriod": "10s"
+      }
+    },
+    {
+      "name": "journiv-valkey",
+      "image": "valkey/valkey:9.0-alpine",
+      "restart": "unless-stopped",
+      "volumes": [
+        {
+          "hostPath": "${APP_DATA_DIR}/data/valkey",
+          "containerPath": "/data"
+        }
+      ],
+      "healthCheck": {
+        "test": "valkey-cli ping",
+        "interval": "10s",
+        "timeout": "5s",
+        "retries": 5,
+        "startPeriod": "10s"
+      }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ Apps in this store, all using **official upstream Docker images**:
 - `openclaw-vinuta` — OpenClaw instance for his wife Vinuta (host port 18799)
 - `hermes-hari` — Hermes Agent for Hari (gateway + dashboard, host port 9119)
 - `hermes-vinuta` — Hermes Agent for Vinuta (gateway + dashboard, host port 9219)
+- `journiv` — Journiv private journal (host port 8000; PostgreSQL + Valkey + Celery)
 
 Each per-user instance must be **fully isolated** — distinct host ports, container/service names (`<app>-<user>-<role>`, e.g. `hermes-vinuta-gateway`), and `${APP_DATA_DIR}` directories. They share no state. The Hari/Vinuta pairs use the same upstream image and form-field set; keep them in sync when bumping versions.
 
